@@ -9,7 +9,8 @@ API_KEYS = {
 }
 
 BASE_URLS = {
-    'discounts-prices': 'https://discounts-prices-api.wildberries.ru'
+    'discounts-prices': 'https://discounts-prices-api.wildberries.ru',
+    'med': 'https://med-online.ru/upload/acrit.exportproplus/file.prices.csv?1755164681'
 }
 
 FILE_PATH = 'C:/Users/Admin/Desktop/'
