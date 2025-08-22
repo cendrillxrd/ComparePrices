@@ -20,16 +20,20 @@ class Client(ABC):
         pass
 
     @abstractmethod
-    def get_data(self, **kwargs):
+    def get_data(self):
         pass
 
 
 class WildberriesAPIClient(Client):
-    def __init__(self):
+    def __init__(self, strategy: RequestStrategy):
         self.base_url = BASE_URLS
         self.api_key = API_KEYS
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
+        self.__strategy = strategy
+
+    def set_strategy(self, strategy: RequestStrategy):
+        self.__strategy = strategy
 
     def make_request(self, method: Literal['GET', 'POST'],
                      api_type: Literal['Analytics_Statistics_API_KEY', 'Price_discount_API_KEY'],
@@ -70,8 +74,8 @@ class WildberriesAPIClient(Client):
 
         return None
 
-    def get_data(self, strategy: RequestStrategy, **kwargs):
-        return strategy.get_info(self, **kwargs)
+    def get_data(self, **kwargs):
+        return self.__strategy.get_info(self)
 
 
 class MedClient(Client):

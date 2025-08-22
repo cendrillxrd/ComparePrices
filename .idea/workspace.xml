@@ -4,19 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad7d4bac-c865-4ca2-8a7e-fb08f98c6c1f" name="Changes" comment="med client and start merge">
-      <change afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/converter.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/convert_strategies.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strategies/request_strategies.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/date_helpers.py" afterDir="false" />
+    <list default="true" id="ad7d4bac-c865-4ca2-8a7e-fb08f98c6c1f" name="Changes" comment="full recreated">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/converters/prices_converter.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/converter.py" beforeDir="false" afterPath="$PROJECT_DIR$/converter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/info_collector.py" beforeDir="false" afterPath="$PROJECT_DIR$/info_collector.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/med_client.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/wildberries_api.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,15 +34,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.main.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "wb__client",
-    "last_opened_file_path": "C:/Users/Admin/PycharmProjects/ComparePrices/strategies"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;wb__client&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Admin/PycharmProjects/ComparePrices/strategies&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Admin\PycharmProjects\ComparePrices\strategies" />
@@ -117,12 +109,21 @@
       <option name="project" value="LOCAL" />
       <updated>1755725825064</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="full recreated">
+      <option name="closed" value="true" />
+      <created>1755823468138</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1755823468138</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="create api client and api collector" />
     <MESSAGE value="med client and start merge" />
-    <option name="LAST_COMMIT_MESSAGE" value="med client and start merge" />
+    <MESSAGE value="full recreated" />
+    <option name="LAST_COMMIT_MESSAGE" value="full recreated" />
   </component>
 </project>
