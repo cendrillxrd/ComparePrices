@@ -13,11 +13,12 @@ class InfoCollector:
         self.wb = WBService()
         self.med = MEDService()
 
-    def save_info(self):
-        pass
-
     def collect_info(self):
         wb_prices = self.wb.get_wb_prices()
         wb_stocks = self.wb.get_wb_stocks()
         med_prices = self.med.get_med_prices()
-        pass
+        return {
+            'wb_prices': wb_prices,
+            'wb_stocks': wb_stocks,
+            'med_prices': med_prices,
+        }
