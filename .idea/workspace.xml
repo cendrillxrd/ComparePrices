@@ -4,14 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad7d4bac-c865-4ca2-8a7e-fb08f98c6c1f" name="Changes" comment="create api client and api collector">
-      <change afterPath="$PROJECT_DIR$/info_collector.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/med_client.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/merge/wb_med_merger.py" afterDir="false" />
+    <list default="true" id="ad7d4bac-c865-4ca2-8a7e-fb08f98c6c1f" name="Changes" comment="med client and start merge">
+      <change afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/converter.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/convert_strategies.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strategies/request_strategies.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/date_helpers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/converters/prices_converter.py" beforeDir="false" afterPath="$PROJECT_DIR$/converters/prices_converter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/converters/prices_converter.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/info_collector.py" beforeDir="false" afterPath="$PROJECT_DIR$/info_collector.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/med_client.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/wildberries_api.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,9 +47,15 @@
     "Python.main.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "wb__client"
+    "git-widget-placeholder": "wb__client",
+    "last_opened_file_path": "C:/Users/Admin/PycharmProjects/ComparePrices/strategies"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\PycharmProjects\ComparePrices\strategies" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="ComparePrices" />
@@ -98,11 +109,20 @@
       <option name="project" value="LOCAL" />
       <updated>1755614184496</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="med client and start merge">
+      <option name="closed" value="true" />
+      <created>1755725825064</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1755725825064</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="create api client and api collector" />
-    <option name="LAST_COMMIT_MESSAGE" value="create api client and api collector" />
+    <MESSAGE value="med client and start merge" />
+    <option name="LAST_COMMIT_MESSAGE" value="med client and start merge" />
   </component>
 </project>
