@@ -35,14 +35,17 @@ class PricesMEDStrategy(ConverterStrategy):
         # med_prices_df = pd.read_csv(StringIO(get_prices_result.text), encoding='utf-8')
         med_prices_df = pd.read_csv('file_prices.csv', encoding='utf-8')
         med_prices_df.drop_duplicates(inplace=True)
-        med_prices_df.reset_index(inplace=True, drop=True)
-        med_prices_df.rename({'Артикул': 'Артикул продавца',
-                              'Цена без скидки': '(MED) Цена без скидки',
-                              'Цена со скидкой': '(MED) Цена со скидкой продавца'},
-                             inplace=True,
-                             axis=1)
+        # добавить логику для Марины
+        med_unique_prices_df = med_prices_df.sort_values('Цена со скидкой').drop_duplicates(['Артикул',
+                                                                                             'Цена без скидки'])
+        med_unique_prices_df.reset_index(inplace=True, drop=True)
+        med_unique_prices_df.rename({'Артикул': 'Артикул продавца',
+                                     'Цена без скидки': '(MED) Цена без скидки',
+                                     'Цена со скидкой': '(MED) Цена со скидкой продавца'},
+                                    inplace=True,
+                                    axis=1)
 
-        return med_prices_df
+        return med_unique_prices_df
 
 
 class StocksStrategy(ConverterStrategy):
@@ -55,10 +58,11 @@ class StocksStrategy(ConverterStrategy):
                                 fromClientCount=df['metrics'].apply(lambda x: x['fromClientCount'])
                                 )
         corrected_df = assigned_df[['nmID', 'stockCount', 'toClientCount', 'fromClientCount']].copy()
-        corrected_df.rename({'nmID': 'Артикул WB',
-                             'stockCount': 'Остаток',
-                             'toClientCount': 'В пути к клиенту',
-                             'fromClientCount': 'В пути от клиента'},
-                            inplace=True,
-                            axis=1)
-        return corrected_df
+        corrected_no_zeros_df = corrected_df.loc[~(corrected_df == 0).all(axis=1)]
+        corrected_no_zeros_df.rename({'nmID': 'Артикул WB',
+                                      'stockCount': 'Остаток',
+                                      'toClientCount': 'В пути к клиенту',
+                                      'fromClientCount': 'В пути от клиента'},
+                                     inplace=True,
+                                     axis=1)
+        return corrected_no_zeros_df

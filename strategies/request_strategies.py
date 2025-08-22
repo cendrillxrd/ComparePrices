@@ -72,7 +72,6 @@ class ReqStocksStrategy(RequestStrategy):
         result = []
         offset = 0
         count = 0
-        stock_type = ''
         payload = {
             'currentPeriod': {
                 'start': self.start_date,

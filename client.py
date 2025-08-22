@@ -25,12 +25,12 @@ class Client(ABC):
 
 
 class WildberriesAPIClient(Client):
-    def __init__(self, strategy: RequestStrategy):
+    def __init__(self):
         self.base_url = BASE_URLS
         self.api_key = API_KEYS
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
-        self.__strategy = strategy
+        self.__strategy = None
 
     def set_strategy(self, strategy: RequestStrategy):
         self.__strategy = strategy
@@ -75,6 +75,8 @@ class WildberriesAPIClient(Client):
         return None
 
     def get_data(self, **kwargs):
+        if self.__strategy is None:
+            raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
         return self.__strategy.get_info(self)
 
 
