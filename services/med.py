@@ -1,9 +1,9 @@
 import pandas as pd
 import logging
 
-from client import MedClient
+from workers.client import MedClient
 from strategies.convert_strategies import PricesMEDStrategy
-from converter import Converter
+from workers.converter import Converter
 from logging_config import setup_logging
 
 setup_logging()

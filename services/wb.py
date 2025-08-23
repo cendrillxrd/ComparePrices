@@ -1,11 +1,11 @@
 import pandas as pd
 import logging
 
-from client import WildberriesAPIClient
+from workers.client import WildberriesAPIClient
 from strategies.request_strategies import ReqStocksStrategy, ReqPricesStrategy
 from strategies.convert_strategies import PricesWBStrategy, StocksStrategy
 from logging_config import setup_logging
-from converter import Converter
+from workers.converter import Converter
 
 setup_logging()
 logger = logging.getLogger(__name__)

@@ -1,10 +1,9 @@
 import logging
 
-from info_collector import InfoCollector
-from config import FILE_PATH
+from workers.info_collector import InfoCollector
 from logging_config import setup_logging
-from merge.merger import WBMedMerger
-from excel_formater import ExcelFormatter
+from workers.merger import WBMedMerger
+from workers.excel_formater import ExcelFormatter
 
 setup_logging()
 logger = logging.getLogger(__name__)
