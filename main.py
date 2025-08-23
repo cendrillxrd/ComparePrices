@@ -15,8 +15,9 @@ def main():
     merger = WBMedMerger()
 
     info = info_collector.collect_info()
-    result = merger.merge(info['wb_prices'], info['med_prices'], info['wb_stocks'])
-    excel_formatter = ExcelFormatter(result)
+    info_merged = merger.merge(info['wb_prices'], info['med_prices'], info['wb_stocks'])
+
+    excel_formatter = ExcelFormatter(info_merged)
     excel_formatter.get_excel_for_comparison()
 
 

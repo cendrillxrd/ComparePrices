@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ad7d4bac-c865-4ca2-8a7e-fb08f98c6c1f" name="Changes" comment="add excel_formatter">
+    <list default="true" id="ad7d4bac-c865-4ca2-8a7e-fb08f98c6c1f" name="Changes" comment="refiles">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -42,6 +42,8 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\PycharmProjects\ComparePrices\workers" />
+      <recent name="C:\Users\Admin\PycharmProjects\workers" />
       <recent name="C:\Users\Admin\PycharmProjects\ComparePrices\strategies" />
     </key>
   </component>
@@ -146,7 +148,15 @@
       <option name="project" value="LOCAL" />
       <updated>1755948321682</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="refiles">
+      <option name="closed" value="true" />
+      <created>1755949013183</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1755949013183</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -157,6 +167,7 @@
     <MESSAGE value="create WB/MED services" />
     <MESSAGE value="create merger" />
     <MESSAGE value="add excel_formatter" />
-    <option name="LAST_COMMIT_MESSAGE" value="add excel_formatter" />
+    <MESSAGE value="refiles" />
+    <option name="LAST_COMMIT_MESSAGE" value="refiles" />
   </component>
 </project>
