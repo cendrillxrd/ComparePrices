@@ -74,7 +74,7 @@ class WildberriesAPIClient(Client):
 
         return None
 
-    def get_data(self, **kwargs):
+    def get_data(self, **kwargs) -> list[dict]:
         if self.__strategy is None:
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
         return self.__strategy.get_info(self)

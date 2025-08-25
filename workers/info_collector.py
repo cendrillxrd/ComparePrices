@@ -13,7 +13,7 @@ class InfoCollector:
         self.wb = WBService()
         self.med = MEDService()
 
-    def collect_info(self):
+    def collect_info(self) -> InfoDTO:
         wb_prices = self.wb.get_wb_prices()
         wb_stocks = self.wb.get_wb_stocks()
         med_prices = self.med.get_med_prices()

@@ -37,3 +37,11 @@ LIMIT_STOCKS = 1000  # <= 1000
 
 TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
+
+COLUMNS_FOR_EXCEL_FORMATTER = {
+    "discount_wb": "Скидка WB ●",
+    "wb_price_with_discount": "(WB) Цена со скидкой WB ●",
+    "price_diff": "Разность цен ●",
+    "med_price": "(MED) Цена со скидкой продавца",
+    "wb_seller_price": "(WB) Цена со скидкой продавца",
+}

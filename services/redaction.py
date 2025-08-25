@@ -30,12 +30,14 @@ class RedactionService:
 
     @with_strategies(MergePricesStrategy, CorrPricesStrategy)
     def merge_prices(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка данных по ценам')
         prices_merged = self.merger.merge(wb_df, med_df)
         prices_corrected = self.corrector.correct(prices_merged)
         return prices_corrected
 
     @with_strategies(MergeStocksStrategy, CorrStocksStrategy)
     def merge_stocks(self, stocks_df: pd.DataFrame, prices_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка данных по остаткам')
         stocks_merged = self.merger.merge(stocks_df, prices_df)
         stocks_corrected = self.corrector.correct(stocks_merged)
         return stocks_corrected

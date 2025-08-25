@@ -19,6 +19,7 @@ def main():
 
     excel_formatter = ExcelFormatter(info_redacted)
     excel_formatter.get_excel_for_comparison()
+    logger.info(f'Успешно завершено')
 
 
 if __name__ == "__main__":

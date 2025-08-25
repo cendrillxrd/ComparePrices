@@ -9,7 +9,7 @@ class Corrector:
     def set_strategy(self, strategy: CorrectorStrategy):
         self.__strategy = strategy
 
-    def correct(self, df: pd.DataFrame):
+    def correct(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.__strategy is None:
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
         return self.__strategy.correcting(df)

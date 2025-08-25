@@ -12,8 +12,8 @@ class ConverterStrategy(ABC):
 
 
 class ConvPricesWBStrategy(ConverterStrategy):
-    def converting(self, data):
-        """Преобразует данные о ценах на WB в DataFrame для воронки продаж."""
+    def converting(self, data: dict) -> pd.DataFrame:
+        """Преобразует данные о ценах на WB в DataFrame"""
         df = pd.DataFrame(data)
 
         assigned_df = df.assign(price=df['sizes'].apply(lambda x: int(x[0]['price'])),
@@ -31,9 +31,9 @@ class ConvPricesWBStrategy(ConverterStrategy):
 
 
 class ConvPricesMEDStrategy(ConverterStrategy):
-    def converting(self, data):
-        """Преобразует данные о ценах на меде в DataFrame для воронки продаж."""
-        # med_prices_df = pd.read_csv(StringIO(get_prices_result.text), encoding='utf-8')
+    def converting(self, data) -> pd.DataFrame:
+        """Преобразует данные о ценах на меде в DataFrame"""
+        # med_prices_df = pd.read_csv(StringIO(data.text), encoding='utf-8')
         med_prices_df = pd.read_csv('file_prices.csv', encoding='utf-8')
         med_prices_df.drop_duplicates(inplace=True)
         med_unique_prices_df = med_prices_df.sort_values('Цена со скидкой').drop_duplicates(['Артикул',
@@ -51,8 +51,8 @@ class ConvPricesMEDStrategy(ConverterStrategy):
 
 
 class ConvStocksStrategy(ConverterStrategy):
-    def converting(self, data):
-        """Преобразует данные об остатках в DataFrame для воронки продаж."""
+    def converting(self, data: dict) -> pd.DataFrame:
+        """Преобразует данные об остатках в DataFrame"""
         df = pd.DataFrame(data)
 
         assigned_df = df.assign(stockCount=df['metrics'].apply(lambda x: x['stockCount']),

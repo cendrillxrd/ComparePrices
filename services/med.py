@@ -28,7 +28,8 @@ class MEDService:
 
     @with_strategies(ConvPricesMEDStrategy)
     def get_med_prices(self) -> pd.DataFrame:
-        # med_prices_csv = self.med.get_data()
+        logger.info('Получение данных о ценах на Меде')
+        med_prices_csv = self.med.get_data()
         med_prices_csv = pd.read_csv('file_prices.csv')
         med_prices_df = self.converter.convert(med_prices_csv)
         return med_prices_df
