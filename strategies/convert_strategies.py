@@ -2,6 +2,7 @@ from io import StringIO
 from abc import ABC, abstractmethod
 
 import pandas as pd
+from config import BASE_COLUMNS_NAME
 
 
 class ConverterStrategy(ABC):
@@ -17,12 +18,12 @@ class ConvPricesWBStrategy(ConverterStrategy):
 
         assigned_df = df.assign(price=df['sizes'].apply(lambda x: int(x[0]['price'])),
                                 price_seller=df['sizes'].apply(lambda x: int(x[0]['discountedPrice'])))
-        corrected_df = assigned_df[['nmID', 'vendorCode', 'price', 'price_seller']].copy()
+        columns_name = ['nmID', 'vendorCode', 'price', 'price_seller']
+        corrected_df = assigned_df[columns_name].copy()
 
-        corrected_df.rename({'nmID': 'Артикул WB',
-                             'vendorCode': 'Артикул продавца',
-                             'price': '(WB) Цена без скидки',
-                             'price_seller': '(WB) Цена со скидкой продавца'},
+        columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
+
+        corrected_df.rename(columns_rename,
                             inplace=True,
                             axis=1)
 
@@ -38,9 +39,12 @@ class ConvPricesMEDStrategy(ConverterStrategy):
         med_unique_prices_df = med_prices_df.sort_values('Цена со скидкой').drop_duplicates(['Артикул',
                                                                                              'Цена без скидки'])
         med_unique_prices_df.reset_index(inplace=True, drop=True)
-        med_unique_prices_df.rename({'Артикул': 'Артикул продавца',
-                                     'Цена без скидки': '(MED) Цена без скидки',
-                                     'Цена со скидкой': '(MED) Цена со скидкой продавца'},
+
+        columns_name = ['Артикул', 'Цена без скидки', 'Цена со скидкой']
+
+        columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
+
+        med_unique_prices_df.rename(columns_rename,
                                     inplace=True,
                                     axis=1)
         return med_unique_prices_df
@@ -55,16 +59,14 @@ class ConvStocksStrategy(ConverterStrategy):
                                 toClientCount=df['metrics'].apply(lambda x: x['toClientCount']),
                                 fromClientCount=df['metrics'].apply(lambda x: x['fromClientCount'])
                                 )
-        corrected_df = assigned_df[['nmID', 'stockCount', 'subjectName', 'name',
-                                    'brandName', 'toClientCount', 'fromClientCount']].copy()
+
+        columns_name = ['nmID', 'stockCount', 'subjectName', 'name', 'brandName', 'toClientCount', 'fromClientCount']
+        corrected_df = assigned_df[columns_name].copy()
         corrected_no_zeros_df = corrected_df.loc[~(corrected_df == 0).all(axis=1)]
-        corrected_no_zeros_df.rename({'nmID': 'Артикул WB',
-                                      'subjectName': 'Категория',
-                                      'name': 'Наименование',
-                                      'brandName': 'Бренд',
-                                      'stockCount': 'Остаток',
-                                      'toClientCount': 'В пути к клиенту',
-                                      'fromClientCount': 'В пути от клиента'},
+
+        columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
+
+        corrected_no_zeros_df.rename(columns_rename,
                                      inplace=True,
                                      axis=1)
         return corrected_no_zeros_df

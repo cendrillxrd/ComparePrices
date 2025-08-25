@@ -1,8 +1,17 @@
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl.styles import PatternFill
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.utils import get_column_letter
+from utils.excel_helper import red_fill, yellow_fill, green_fill
+
+
+COLUMNS = {
+    "discount_wb": "Скидка WB ●",
+    "wb_price_with_discount": "(WB) Цена со скидкой WB ●",
+    "price_diff": "Разность цен ●",
+    "med_price": "(MED) Цена со скидкой продавца",
+    "wb_seller_price": "(WB) Цена со скидкой продавца",
+}
 
 
 class ExcelFormatter:
@@ -11,66 +20,64 @@ class ExcelFormatter:
         self.df = df
 
     def get_excel_for_comparison(self):
-        work_sheet = self.work_book.active
+        ws = self.work_book.active
+        self._write_dataframe(ws)
+        col_letters = self._map_columns()
+        self._add_new_columns(ws, col_letters)
+        self._fill_formulas(ws, col_letters)
+        self._apply_conditional_formatting(ws, col_letters)
+        self._auto_fit_columns(ws)
+        self.work_book.save("compare_price.xlsx")
 
-        yellow_fill = PatternFill(start_color='FFFF00',  # Желтый цвет
-                                  end_color='FFFF00',
-                                  fill_type='solid')
-        green_fill = PatternFill(start_color='00FF00',
-                                 end_color='00FF00',
-                                 fill_type='solid')
-        red_fill = PatternFill(start_color='FF0000',  # синий цвет
-                               end_color='FF0000',
-                               fill_type='solid')
-
+    def _write_dataframe(self, ws):
         for row in dataframe_to_rows(self.df, index=False, header=True):
-            work_sheet.append(row)
+            ws.append(row)
 
-        columns_letters = {}
-        for i, col_name in enumerate(self.df.columns, start=1):
-            col_letter = get_column_letter(i)
-            columns_letters[col_name] = col_letter
+    def _map_columns(self):
+        return {col: get_column_letter(i+1) for i, col in enumerate(self.df.columns)}
 
-        # Динамически определяем последний столбец
+    def _add_new_columns(self, ws, col_letters):
         last_col_idx = len(self.df.columns)
-        # Добавляем новые столбцы с заголовками
-        new_columns = ['Скидка WB ●', '(WB) Цена со скидкой WB ●', 'Разность цен ●']
-
+        new_columns = [COLUMNS["discount_wb"], COLUMNS["wb_price_with_discount"], COLUMNS["price_diff"]]
         for i, col_name in enumerate(new_columns, start=1):
             col_letter = get_column_letter(last_col_idx + i)
-            columns_letters[col_name] = col_letter
-            work_sheet[f'{col_letter}1'] = col_name
+            col_letters[col_name] = col_letter
+            ws[f"{col_letter}1"] = col_name
 
+    @staticmethod
+    def _formula_wb_price(cols, row):
+        return f"=PRODUCT({cols[COLUMNS['wb_seller_price']]}{row}, (1-{cols[COLUMNS['discount_wb']]}{row}/100))"
+
+    @staticmethod
+    def _formula_price_diff(cols, row):
+        return f"=ABS({cols[COLUMNS['med_price']]}{row}-{cols[COLUMNS['wb_price_with_discount']]}{row})"
+
+    def _fill_formulas(self, ws, cols):
         for row in range(2, len(self.df) + 2):
-            formula_wb_price = (f'=PRODUCT({columns_letters['(WB) Цена со скидкой продавца']}{row},'
-                                f'(1-{columns_letters['Скидка WB ●']}{row}/100))')
-            formula_compare = (f'=ABS({columns_letters['(MED) Цена со скидкой продавца']}{row}-'
-                               f'{columns_letters['(WB) Цена со скидкой WB ●']}{row})')
-
-            cell_price = work_sheet[f'{columns_letters['(WB) Цена со скидкой WB ●']}{row}']
-            cell_price.value = formula_wb_price
+            cell_price = ws[f"{cols[COLUMNS['wb_price_with_discount']]}{row}"]
+            cell_price.value = self._formula_wb_price(cols, row)
             cell_price.fill = yellow_fill
 
-            cell_compare = work_sheet[f'{columns_letters['Разность цен ●']}{row}']
-            cell_compare.value = formula_compare
+            cell_compare = ws[f"{cols[COLUMNS['price_diff']]}{row}"]
+            cell_compare.value = self._formula_price_diff(cols, row)
 
-            cell_discount = work_sheet[f'{columns_letters['Скидка WB ●']}{row}']
-            cell_discount.fill = green_fill
+            ws[f"{cols[COLUMNS['discount_wb']]}{row}"].fill = green_fill
 
-        work_sheet.conditional_formatting.add(f'{columns_letters['Разность цен ●']}2:{columns_letters['Разность цен ●']}{len(self.df) + 2}',
-                                              FormulaRule(formula=[f'ABS({columns_letters['(MED) Цена со скидкой продавца']}2-{columns_letters['(WB) Цена со скидкой WB ●']}2) >= 800'], stopIfTrue=True,
-                                                          fill=red_fill))
+    def _apply_conditional_formatting(self, ws, cols):
+        last_row = len(self.df) + 2
+        ws.conditional_formatting.add(
+            f"{cols[COLUMNS['price_diff']]}2:{cols[COLUMNS['price_diff']]}{last_row}",
+            FormulaRule(
+                formula=[
+                    f"ABS({cols[COLUMNS['med_price']]}2-{cols[COLUMNS['wb_price_with_discount']]}2) >= 800"
+                ],
+                stopIfTrue=True,
+                fill=red_fill,
+            ),
+        )
 
-        for col in work_sheet.columns:
-            max_length = 0
-            col_letter = get_column_letter(col[0].column)
-            for cell in col:
-                try:
-                    if cell.value:
-                        max_length = max(max_length, len(str(cell.value)))
-                except:
-                    pass
-            adjusted_width = max_length + 2
-            work_sheet.column_dimensions[col_letter].width = adjusted_width
-
-        self.work_book.save('compare_price.xlsx')
+    @staticmethod
+    def _auto_fit_columns(ws):
+        for col in ws.columns:
+            max_length = max((len(str(cell.value)) for cell in col if cell.value), default=0)
+            ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2

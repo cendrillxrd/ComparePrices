@@ -12,10 +12,10 @@ class CorrectorStrategy(ABC):
 class CorrPricesStrategy(CorrectorStrategy):
     def correcting(self, df):
         df.fillna(0, inplace=True)
-        df['(MED) Цена без скидки'] = pd.to_numeric(df['(MED) Цена без скидки'],
-                                                    downcast="integer")
-        df['(MED) Цена со скидкой продавца'] = pd.to_numeric(df['(MED) Цена со скидкой продавца'],
-                                                             downcast="integer")
+
+        columns_name = ['(MED) Цена без скидки', '(MED) Цена со скидкой продавца']
+        for col in columns_name:
+            df[col] = pd.to_numeric(df[col], downcast="integer")
 
         return df
 
