@@ -3,7 +3,7 @@ import logging
 from services.wb import WBService
 from services.med import MEDService
 from logging_config import setup_logging
-
+from DTO.info_dto import InfoDTO
 setup_logging()
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,8 @@ class InfoCollector:
         wb_prices = self.wb.get_wb_prices()
         wb_stocks = self.wb.get_wb_stocks()
         med_prices = self.med.get_med_prices()
-        return {
-            'wb_prices': wb_prices,
-            'wb_stocks': wb_stocks,
-            'med_prices': med_prices,
-        }
+        return InfoDTO(
+            wb_stocks=wb_stocks,
+            wb_prices=wb_prices,
+            med_prices=med_prices
+        )

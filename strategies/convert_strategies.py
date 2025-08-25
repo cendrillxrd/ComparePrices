@@ -10,7 +10,7 @@ class ConverterStrategy(ABC):
         pass
 
 
-class PricesWBStrategy(ConverterStrategy):
+class ConvPricesWBStrategy(ConverterStrategy):
     def converting(self, data):
         """Преобразует данные о ценах на WB в DataFrame для воронки продаж."""
         df = pd.DataFrame(data)
@@ -29,13 +29,12 @@ class PricesWBStrategy(ConverterStrategy):
         return corrected_df
 
 
-class PricesMEDStrategy(ConverterStrategy):
+class ConvPricesMEDStrategy(ConverterStrategy):
     def converting(self, data):
         """Преобразует данные о ценах на меде в DataFrame для воронки продаж."""
         # med_prices_df = pd.read_csv(StringIO(get_prices_result.text), encoding='utf-8')
         med_prices_df = pd.read_csv('file_prices.csv', encoding='utf-8')
         med_prices_df.drop_duplicates(inplace=True)
-        # добавить логику для Марины
         med_unique_prices_df = med_prices_df.sort_values('Цена со скидкой').drop_duplicates(['Артикул',
                                                                                              'Цена без скидки'])
         med_unique_prices_df.reset_index(inplace=True, drop=True)
@@ -44,11 +43,10 @@ class PricesMEDStrategy(ConverterStrategy):
                                      'Цена со скидкой': '(MED) Цена со скидкой продавца'},
                                     inplace=True,
                                     axis=1)
-
         return med_unique_prices_df
 
 
-class StocksStrategy(ConverterStrategy):
+class ConvStocksStrategy(ConverterStrategy):
     def converting(self, data):
         """Преобразует данные об остатках в DataFrame для воронки продаж."""
         df = pd.DataFrame(data)
@@ -57,9 +55,13 @@ class StocksStrategy(ConverterStrategy):
                                 toClientCount=df['metrics'].apply(lambda x: x['toClientCount']),
                                 fromClientCount=df['metrics'].apply(lambda x: x['fromClientCount'])
                                 )
-        corrected_df = assigned_df[['nmID', 'stockCount', 'toClientCount', 'fromClientCount']].copy()
+        corrected_df = assigned_df[['nmID', 'stockCount', 'subjectName', 'name',
+                                    'brandName', 'toClientCount', 'fromClientCount']].copy()
         corrected_no_zeros_df = corrected_df.loc[~(corrected_df == 0).all(axis=1)]
         corrected_no_zeros_df.rename({'nmID': 'Артикул WB',
+                                      'subjectName': 'Категория',
+                                      'name': 'Наименование',
+                                      'brandName': 'Бренд',
                                       'stockCount': 'Остаток',
                                       'toClientCount': 'В пути к клиенту',
                                       'fromClientCount': 'В пути от клиента'},

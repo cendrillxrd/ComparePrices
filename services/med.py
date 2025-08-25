@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 
 from workers.client import MedClient
-from strategies.convert_strategies import PricesMEDStrategy
+from strategies.convert_strategies import ConvPricesMEDStrategy
 from workers.converter import Converter
 from logging_config import setup_logging
 
@@ -26,7 +26,7 @@ class MEDService:
         self.med = MedClient()
         self.converter = Converter()
 
-    @with_strategies(PricesMEDStrategy)
+    @with_strategies(ConvPricesMEDStrategy)
     def get_med_prices(self) -> pd.DataFrame:
         # med_prices_csv = self.med.get_data()
         med_prices_csv = pd.read_csv('file_prices.csv')

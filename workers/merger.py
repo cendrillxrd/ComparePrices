@@ -1,20 +1,14 @@
 import pandas as pd
-from abc import ABC, abstractmethod
-
-from utils.merger_rules import apply_rules
+from strategies.merge_strategies import MergeStrategies
 
 
-class Merger(ABC):
-    @abstractmethod
-    def merge(self, *args) -> pd.DataFrame:
-        pass
+class Merger:
+    def __init__(self):
+        self.__strategy = None
 
+    def set_strategy(self, strategy: MergeStrategies):
+        self.__strategy = strategy
 
-class WBMedMerger(Merger):
-    def __init__(self, merge_on: str = 'Артикул продавца'):
-        self.merge_on = merge_on
-
-    def merge(self, wb_prices_df: pd.DataFrame, med_prices_df: pd.DataFrame, wb_stock_df: pd.DataFrame) -> pd.DataFrame:
-        merged_df = pd.merge(wb_prices_df, med_prices_df, on=self.merge_on, how='left')
-        merged_df = apply_rules(merged_df, wb_stock_df)
+    def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
+        merged_df = self.__strategy.merge(df1, df2)
         return merged_df

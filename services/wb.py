@@ -3,7 +3,7 @@ import logging
 
 from workers.client import WildberriesAPIClient
 from strategies.request_strategies import ReqStocksStrategy, ReqPricesStrategy
-from strategies.convert_strategies import PricesWBStrategy, StocksStrategy
+from strategies.convert_strategies import ConvPricesWBStrategy, ConvStocksStrategy
 from logging_config import setup_logging
 from workers.converter import Converter
 
@@ -28,14 +28,14 @@ class WBService:
         self.wb = WildberriesAPIClient()
         self.converter = Converter()
 
-    @with_strategies(ReqPricesStrategy, PricesWBStrategy)
+    @with_strategies(ReqPricesStrategy, ConvPricesWBStrategy)
     def get_wb_prices(self) -> pd.DataFrame:
         logger.info('Получение данных о ценах')
         prices_json = self.wb.get_data()
         prices_df = self.converter.convert(prices_json)
         return prices_df
 
-    @with_strategies(ReqStocksStrategy, StocksStrategy)
+    @with_strategies(ReqStocksStrategy, ConvStocksStrategy)
     def get_wb_stocks(self) -> pd.DataFrame:
         logger.info('Получение данных об остатках')
         stocks_json = self.wb.get_data()

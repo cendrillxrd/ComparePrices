@@ -13,8 +13,6 @@ class ExcelFormatter:
     def get_excel_for_comparison(self):
         work_sheet = self.work_book.active
 
-        work_sheet.delete_rows(1, work_sheet.max_row)
-
         yellow_fill = PatternFill(start_color='FFFF00',  # Желтый цвет
                                   end_color='FFFF00',
                                   fill_type='solid')
@@ -28,26 +26,39 @@ class ExcelFormatter:
         for row in dataframe_to_rows(self.df, index=False, header=True):
             work_sheet.append(row)
 
-        work_sheet['G1'] = 'Скидка WB ●'
-        work_sheet['H1'] = '(WB) Цена со скидкой WB ●'
-        work_sheet['I1'] = 'Разность цен ●'
+        columns_letters = {}
+        for i, col_name in enumerate(self.df.columns, start=1):
+            col_letter = get_column_letter(i)
+            columns_letters[col_name] = col_letter
+
+        # Динамически определяем последний столбец
+        last_col_idx = len(self.df.columns)
+        # Добавляем новые столбцы с заголовками
+        new_columns = ['Скидка WB ●', '(WB) Цена со скидкой WB ●', 'Разность цен ●']
+
+        for i, col_name in enumerate(new_columns, start=1):
+            col_letter = get_column_letter(last_col_idx + i)
+            columns_letters[col_name] = col_letter
+            work_sheet[f'{col_letter}1'] = col_name
 
         for row in range(2, len(self.df) + 2):
-            formula_wb_price = f'=PRODUCT(D{row},(1-G{row}/100))'
-            formula_compare = f'=ABS(F{row}-H{row})'
+            formula_wb_price = (f'=PRODUCT({columns_letters['(WB) Цена со скидкой продавца']}{row},'
+                                f'(1-{columns_letters['Скидка WB ●']}{row}/100))')
+            formula_compare = (f'=ABS({columns_letters['(MED) Цена со скидкой продавца']}{row}-'
+                               f'{columns_letters['(WB) Цена со скидкой WB ●']}{row})')
 
-            cell_price = work_sheet[f'H{row}']
+            cell_price = work_sheet[f'{columns_letters['(WB) Цена со скидкой WB ●']}{row}']
             cell_price.value = formula_wb_price
             cell_price.fill = yellow_fill
 
-            cell_compare = work_sheet[f'I{row}']
+            cell_compare = work_sheet[f'{columns_letters['Разность цен ●']}{row}']
             cell_compare.value = formula_compare
 
-            cell_discount = work_sheet[f'G{row}']
+            cell_discount = work_sheet[f'{columns_letters['Скидка WB ●']}{row}']
             cell_discount.fill = green_fill
 
-        work_sheet.conditional_formatting.add(f'I2:I{len(self.df) + 2}',
-                                              FormulaRule(formula=[f'ABS(F2-H2) >= 800'], stopIfTrue=True,
+        work_sheet.conditional_formatting.add(f'{columns_letters['Разность цен ●']}2:{columns_letters['Разность цен ●']}{len(self.df) + 2}',
+                                              FormulaRule(formula=[f'ABS({columns_letters['(MED) Цена со скидкой продавца']}2-{columns_letters['(WB) Цена со скидкой WB ●']}2) >= 800'], stopIfTrue=True,
                                                           fill=red_fill))
 
         for col in work_sheet.columns:

@@ -2,10 +2,9 @@ import time
 import logging
 from abc import ABC, abstractmethod
 
-# from client import Client
 from config import LIMIT_PRICE, TIME_SLEEP_PRICE, LIMIT_STOCKS, TIME_SLEEP_STOCKS
 from logging_config import setup_logging
-from utils.date_helpers import get_today_date
+from DTO.info_dto import StocksDTO, PriceDTO, asdict
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -21,16 +20,13 @@ class ReqPricesStrategy(RequestStrategy):
     endpoint = "/api/v2/list/goods/filter"
     api_type = "Price_discount_API_KEY"
     url_key = "discounts-prices"
+    price_dto = PriceDTO()
 
     def get_info(self, client, **kwargs) -> list[dict]:
         logger.info(f'Получение данных о ценах на товары')
         result = []
-        offset = 0
         count = 0
-        params = {
-            'limit': LIMIT_PRICE,
-            'offset': offset
-        }
+        params = asdict(self.price_dto)
         response = client.make_request(method='GET',
                                        api_type=self.api_type,
                                        url_key=self.url_key,
@@ -41,16 +37,13 @@ class ReqPricesStrategy(RequestStrategy):
 
         while list_goods and antifreeze:
             antifreeze -= 1
-            offset += LIMIT_PRICE
+            self.price_dto.offset += LIMIT_PRICE
             result.extend(list_goods)
             time.sleep(TIME_SLEEP_PRICE)
             count += len(list_goods)
             logger.debug(f'Карточек загружено {count}')
 
-            params = {
-                'limit': LIMIT_PRICE,
-                'offset': offset
-            }
+            params = asdict(self.price_dto)
             response = client.make_request(method='GET',
                                            api_type=self.api_type,
                                            url_key=self.url_key,
@@ -64,36 +57,12 @@ class ReqStocksStrategy(RequestStrategy):
     endpoint = "/api/v2/stocks-report/products/products"
     api_type = "Analytics_Statistics_API_KEY"
     url_key = "seller-analytics"
-    stock_type = ''
-    start_date = get_today_date()
-    end_date = get_today_date()
+    stock_dto = StocksDTO()
 
     def get_info(self, client, nm_ids=None) -> list[dict]:
         result = []
-        offset = 0
         count = 0
-        payload = {
-            'currentPeriod': {
-                'start': self.start_date,
-                'end': self.end_date
-            },
-            'stockType': self.stock_type,
-            'skipDeletedNm': True,
-            'orderBy': {
-                'field': 'stockCount',
-                'mode': 'desc'
-            },
-            'availabilityFilters': [
-                'deficient',
-                'balanced',
-                'actual',
-                'nonActual',
-                'nonLiquid',
-                'invalidData'
-            ],
-            'limit': LIMIT_STOCKS,
-            'offset': offset
-        }
+        payload = asdict(self.stock_dto)
         if nm_ids is not None:
             payload['nmIDs'] = nm_ids
 
@@ -107,34 +76,13 @@ class ReqStocksStrategy(RequestStrategy):
 
         while items and antifreeze:
             antifreeze -= 1
-            offset += LIMIT_STOCKS
+            self.stock_dto.offset += LIMIT_STOCKS
             result.extend(items)
             time.sleep(TIME_SLEEP_STOCKS)
             count += len(items)
             logger.debug(f'Карточек загружено {count}')
 
-            payload = {
-                'currentPeriod': {
-                    'start': self.start_date,
-                    'end': self.end_date
-                },
-                'stockType': self.stock_type,
-                'skipDeletedNm': True,
-                'orderBy': {
-                    'field': 'stockCount',
-                    'mode': 'desc'
-                },
-                'availabilityFilters': [
-                    'deficient',
-                    'balanced',
-                    'actual',
-                    'nonActual',
-                    'nonLiquid',
-                    'invalidData'
-                ],
-                'limit': LIMIT_STOCKS,
-                'offset': offset
-            }
+            payload = asdict(self.stock_dto)
             if nm_ids is not None:
                 payload['nmIDs'] = nm_ids
 
