@@ -8,7 +8,7 @@ from config import LIMIT_STOCKS, LIMIT_PRICE
 class InfoDTO:
     wb_prices: pd.DataFrame
     med_prices: pd.DataFrame
-    wb_stocks: pd.DataFrame
+    wb_cards_prices: pd.DataFrame
 
 
 @dataclass

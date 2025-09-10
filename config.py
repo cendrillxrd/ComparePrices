@@ -39,9 +39,36 @@ TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
 
 COLUMNS_FOR_EXCEL_FORMATTER = {
-    "discount_wb": "Скидка WB ●",
-    "wb_price_with_discount": "(WB) Цена со скидкой WB ●",
+    "discount_wb": "Скидка WB",
     "price_diff": "Разность цен ●",
     "med_price": "(MED) Цена со скидкой продавца",
-    "wb_seller_price": "(WB) Цена со скидкой продавца",
+    "wb_price": "(WB) Цена со скидкой WB",
 }
+
+DELAY_INTERVAL=10
+
+HEADERS = {
+     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+     "Access-Control-Allow-Credentials": "true",
+     "Access-Control-Allow-Headers":"Authorization, x-pow, x-captcha-id, x-userdata",
+     "Access-Control-Allow-Methods":"HEAD,GET,OPTIONS",
+     "Referer": "https://www.wildberries.ru/seller/859504?sort=popular&page=",
+     "Access-control-Allow-Origin":"https://www.wildberries.ru",
+     "Content-Encoding":"gzip",
+     "Content-Type":"application/json"
+ }
+
+PARAMS = {
+    'ab_testing': 'false',
+    'appType': '1',
+    'curr': 'rub',
+    'dest': '12358062',
+    'lang': 'ru',
+    'sort': 'popular',
+    'spp': '30',
+    'supplier': '859504',
+}
+
+BASE_URL = 'https://catalog.wb.ru/sellers/v4/catalog'
+
+CLUB_PROCENT = 2

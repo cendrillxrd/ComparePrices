@@ -5,7 +5,7 @@ from typing import Dict, Literal, Optional
 
 import requests
 
-from config import API_KEYS, BASE_URLS
+from config import API_KEYS, BASE_URLS, BASE_URL, PARAMS, HEADERS, DELAY_INTERVAL
 from strategies.request_strategies import RequestStrategy
 from logging_config import setup_logging
 
@@ -79,6 +79,38 @@ class WildberriesAPIClient(Client):
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
         return self.__strategy.get_info(self)
 
+
+class WildberriesHttpClient(Client):
+    def __init__(self):
+        self.base_url = BASE_URL
+        self.headers = HEADERS
+        self.params = PARAMS
+        self.__strategy = None
+
+    def make_request(self, page):
+        page = str(page)
+        self.params['page'] = page
+        self.headers['Referer'] = ''.join([self.headers['Referer'], page])
+        response = requests.get(self.base_url, headers=self.headers, params=self.params)
+        content = None
+        if response.status_code == 429:
+            print('Rate limit reached. Sleeping...')
+            time.sleep(DELAY_INTERVAL)
+            return self.make_request(page)
+        elif response.status_code != 200:
+            print(f'Error: {response.status_code}. Try a different proxy or user-agent')
+            response.raise_for_status()
+        else:
+            content = response.json()
+        return content
+
+    def set_strategy(self, strategy: RequestStrategy):
+        self.__strategy = strategy
+
+    def get_data(self, **kwargs) -> list[dict]:
+        if self.__strategy is None:
+            raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
+        return self.__strategy.get_info(self)
 
 class MedClient(Client):
     def __init__(self):

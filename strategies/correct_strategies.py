@@ -24,3 +24,18 @@ class CorrStocksStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
         df.drop(['Остаток', 'В пути к клиенту', 'В пути от клиента'], axis=1, inplace=True)
         return df
+
+
+class CorrWbPricesStrategy(CorrectorStrategy):
+    def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
+        df['Скидка WB'] = 100 - round((df['(WB) Цена со скидкой WB'] / df['(WB) Цена со скидкой продавца']) * 100)
+        return df[['Артикул WB',
+                   'Артикул продавца',
+                   'Категория',
+                   'Наименование',
+                   'Бренд',
+                   '(WB) Цена без скидки',
+                   '(WB) Цена со скидкой продавца',
+                   'Скидка WB',
+                   '(WB) Цена со скидкой WB',
+                   '(WB) Цена со скидкой WB клуба']]

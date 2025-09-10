@@ -17,7 +17,7 @@ class ExcelFormatter:
         self.df = df
 
     def get_excel_for_comparison(self):
-        logger.info('Генерация Эксель файла')
+        logger.info('Генерация excel файла')
         ws = self.work_book.active
         self._write_dataframe(ws)
         col_letters = self._map_columns()
@@ -32,34 +32,23 @@ class ExcelFormatter:
             ws.append(row)
 
     def _map_columns(self) -> dict:
+        print(self.df.columns)
         return {col: get_column_letter(i + 1) for i, col in enumerate(self.df.columns)}
 
     def _add_new_columns(self, ws, col_letters):
         last_col_idx = len(self.df.columns)
-        new_columns = [COLUMNS_FOR_EXCEL_FORMATTER["discount_wb"],
-                       COLUMNS_FOR_EXCEL_FORMATTER["wb_price_with_discount"],
-                       COLUMNS_FOR_EXCEL_FORMATTER["price_diff"]]
-        for i, col_name in enumerate(new_columns, start=1):
-            col_letter = get_column_letter(last_col_idx + i)
-            col_letters[col_name] = col_letter
-            ws[f"{col_letter}1"] = col_name
-
-    @staticmethod
-    def _formula_wb_price(cols, row) -> str:
-        return (f"=PRODUCT({cols[COLUMNS_FOR_EXCEL_FORMATTER['wb_seller_price']]}{row},"
-                f" (1-{cols[COLUMNS_FOR_EXCEL_FORMATTER['discount_wb']]}{row}/100))")
+        col_name = COLUMNS_FOR_EXCEL_FORMATTER["price_diff"]
+        col_letter = get_column_letter(last_col_idx + 1)
+        col_letters[col_name] = col_letter
+        ws[f"{col_letter}1"] = col_name
 
     @staticmethod
     def _formula_price_diff(cols, row) -> str:
         return (f"=ABS({cols[COLUMNS_FOR_EXCEL_FORMATTER['med_price']]}{row}-"
-                f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['wb_price_with_discount']]}{row})")
+                f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['wb_price']]}{row})")
 
     def _fill_formulas(self, ws, cols):
         for row in range(2, len(self.df) + 2):
-            cell_price = ws[f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['wb_price_with_discount']]}{row}"]
-            cell_price.value = self._formula_wb_price(cols, row)
-            cell_price.fill = yellow_fill
-
             cell_compare = ws[f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['price_diff']]}{row}"]
             cell_compare.value = self._formula_price_diff(cols, row)
 
@@ -71,7 +60,7 @@ class ExcelFormatter:
             f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['price_diff']]}2:"
             f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['price_diff']]}{last_row}",
             FormulaRule(formula=[f"ABS({cols[COLUMNS_FOR_EXCEL_FORMATTER['med_price']]}2-"
-                                 f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['wb_price_with_discount']]}2) >= 800"],
+                                 f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['wb_price']]}2) >= 800"],
                         stopIfTrue=True,
                         fill=red_fill,
                         ),

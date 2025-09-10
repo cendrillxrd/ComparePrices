@@ -1,10 +1,12 @@
+import random
 import time
 import logging
 from abc import ABC, abstractmethod
+from typing import Union
 
 from config import LIMIT_PRICE, TIME_SLEEP_PRICE, LIMIT_STOCKS, TIME_SLEEP_STOCKS
 from logging_config import setup_logging
-from DTO.info_dto import StocksDTO, PriceDTO, asdict
+from DTO.dto import StocksDTO, PriceDTO, asdict
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class RequestStrategy(ABC):
     @abstractmethod
-    def get_info(self, client: 'WildberriesAPIClient', **kwargs) -> list[dict]:
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
         pass
 
 
@@ -22,7 +24,7 @@ class ReqPricesStrategy(RequestStrategy):
     url_key = "discounts-prices"
     price_dto = PriceDTO()
 
-    def get_info(self, client, **kwargs) -> list[dict]:
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
         logger.info(f'Получение данных о ценах на товары')
         result = []
         count = 0
@@ -52,6 +54,26 @@ class ReqPricesStrategy(RequestStrategy):
             list_goods = response['data']['listGoods']
         return result
 
+class ReqWbCardsPricesStrategy(RequestStrategy):
+    @staticmethod
+    def get_product_list(client: 'Client', page: int):
+        logger.debug(f'Страница {page}')
+        content = client.make_request(page)
+        product_list = content['products']
+        sleep_time = random.uniform(1, 10)
+        time.sleep(sleep_time)
+        return product_list
+
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        logger.info(f'Получение данных о ценах в карточках WB')
+        cards = []
+        page = 1
+        product_list = self.get_product_list(client, page)
+        while product_list != []:
+            cards.extend(product_list)
+            page += 1
+            product_list = self.get_product_list(client, page)
+        return cards
 
 class ReqStocksStrategy(RequestStrategy):
     endpoint = "/api/v2/stocks-report/products/products"

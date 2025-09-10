@@ -2,7 +2,7 @@ from io import StringIO
 from abc import ABC, abstractmethod
 
 import pandas as pd
-from config import BASE_COLUMNS_NAME
+from config import BASE_COLUMNS_NAME, CLUB_PROCENT
 
 
 class ConverterStrategy(ABC):
@@ -33,8 +33,8 @@ class ConvPricesWBStrategy(ConverterStrategy):
 class ConvPricesMEDStrategy(ConverterStrategy):
     def converting(self, data) -> pd.DataFrame:
         """Преобразует данные о ценах на меде в DataFrame"""
-        # med_prices_df = pd.read_csv(StringIO(data.text), encoding='utf-8')
-        med_prices_df = pd.read_csv('file_prices.csv', encoding='utf-8')
+        med_prices_df = pd.read_csv(StringIO(data.text), encoding='utf-8')
+        # med_prices_df = pd.read_csv('file_prices.csv', encoding='utf-8')
         med_prices_df.drop_duplicates(inplace=True)
         med_unique_prices_df = med_prices_df.sort_values('Цена со скидкой').drop_duplicates(['Артикул',
                                                                                              'Цена без скидки'])
@@ -70,3 +70,24 @@ class ConvStocksStrategy(ConverterStrategy):
                                      inplace=True,
                                      axis=1)
         return corrected_no_zeros_df
+
+class ConvWbCardsPricesStrategy(ConverterStrategy):
+    def converting(self, data: dict) -> pd.DataFrame:
+        """Преобразует данные о ценах на WB в DataFrame"""
+        prices = []
+        prices_df = pd.DataFrame()
+        for card in data:
+            articul = card['id']
+            brand = card['brand']
+            category = card['entity']
+            name = card['name']
+            price = card["sizes"][0]["price"]["product"] // 100
+            price_with_wb_club = round(price * (1 - CLUB_PROCENT / 100))
+            prices.append({'Артикул WB': articul,
+                           '(WB) Цена со скидкой WB': price,
+                           '(WB) Цена со скидкой WB клуба': price_with_wb_club,
+                           'Бренд': brand,
+                           'Категория': category,
+                           'Наименование': name,})
+            prices_df = pd.DataFrame(prices)
+        return prices_df

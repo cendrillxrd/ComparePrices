@@ -4,8 +4,8 @@ import logging
 from workers.merger import Merger
 from workers.corrector import Corrector
 from logging_config import setup_logging
-from strategies.correct_strategies import CorrPricesStrategy, CorrStocksStrategy
-from strategies.merge_strategies import MergePricesStrategy, MergeStocksStrategy
+from strategies.correct_strategies import CorrPricesStrategy, CorrStocksStrategy, CorrWbPricesStrategy
+from strategies.merge_strategies import MergePricesStrategy, MergeStocksStrategy, MergeWbPricesStrategy
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -29,8 +29,8 @@ class RedactionService:
         self.corrector = Corrector()
 
     @with_strategies(MergePricesStrategy, CorrPricesStrategy)
-    def merge_prices(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
-        logger.info('Обработка данных по ценам')
+    def merge_with_med_prices(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка данных по ценам WB и MED')
         prices_merged = self.merger.merge(wb_df, med_df)
         prices_corrected = self.corrector.correct(prices_merged)
         return prices_corrected
@@ -41,3 +41,10 @@ class RedactionService:
         stocks_merged = self.merger.merge(stocks_df, prices_df)
         stocks_corrected = self.corrector.correct(stocks_merged)
         return stocks_corrected
+
+    @with_strategies(MergeWbPricesStrategy, CorrWbPricesStrategy)
+    def merge_wb_prices(self, wb_cards_prices: pd.DataFrame, wb_prices: pd.DataFrame):
+        logger.info('Обработка данных по ценам WB')
+        wb_prices_merged = self.merger.merge(wb_cards_prices, wb_prices)
+        wb_prices_corrected = self.corrector.correct(wb_prices_merged)
+        return wb_prices_corrected
