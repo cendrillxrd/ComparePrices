@@ -4,18 +4,20 @@ import logging
 from workers.merger import Merger
 from workers.corrector import Corrector
 from logging_config import setup_logging
-from strategies.correct_strategies import CorrPricesStrategy, CorrStocksStrategy, CorrWbPricesStrategy
-from strategies.merge_strategies import MergePricesStrategy, MergeStocksStrategy, MergeWbPricesStrategy
+from strategies.correct_strategies import CorrPricesStrategy, CorrStocksStrategy, CorrWbPricesStrategy, CorrCollectionsStrategy
+from strategies.merge_strategies import MergePricesStrategy, MergeStocksStrategy, MergeWbPricesStrategy, MergeWbCollectionsStrategy, MergeCollectionsStrategy
 
 setup_logging()
 logger = logging.getLogger(__name__)
 
 
-def with_strategies(merge_strategy_cls, correcter_strategy_cls):
+def with_strategies(merge_strategy_cls: 'CorrectorStrategy',
+                    correcter_strategy_cls: 'CorrectorStrategy' = None):
     def decorator(method):
         def wrapper(self, *args, **kwargs):
             self.merger.set_strategy(merge_strategy_cls())
-            self.corrector.set_strategy(correcter_strategy_cls())
+            if correcter_strategy_cls is not None:
+                self.corrector.set_strategy(correcter_strategy_cls())
             return method(self, *args, **kwargs)
 
         return wrapper
@@ -48,3 +50,18 @@ class RedactionService:
         wb_prices_merged = self.merger.merge(wb_cards_prices, wb_prices)
         wb_prices_corrected = self.corrector.correct(wb_prices_merged)
         return wb_prices_corrected
+
+    @with_strategies(MergeWbCollectionsStrategy, CorrCollectionsStrategy)
+    def merge_with_med_collections(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка данных по ценам WB и MED')
+        prices_merged = self.merger.merge(wb_df, med_df)
+        prices_corrected = self.corrector.correct(prices_merged)
+        return prices_corrected
+
+    @with_strategies(MergeCollectionsStrategy)
+    def merge_collections(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка данных по коллекциям')
+        prices_merged = self.merger.merge(wb_df, med_df)
+        return prices_merged
+
+

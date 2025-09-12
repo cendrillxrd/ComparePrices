@@ -3,6 +3,7 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font
 from utils.excel_helper import red_fill, yellow_fill, green_fill
 from config import COLUMNS_FOR_EXCEL_FORMATTER
 from logging_config import setup_logging
@@ -20,6 +21,7 @@ class ExcelFormatter:
         logger.info('Генерация excel файла')
         ws = self.work_book.active
         self._write_dataframe(ws)
+        self._make_headers_bold(ws)
         col_letters = self._map_columns()
         self._add_new_columns(ws, col_letters)
         self._fill_formulas(ws, col_letters)
@@ -34,6 +36,12 @@ class ExcelFormatter:
     def _map_columns(self) -> dict:
         print(self.df.columns)
         return {col: get_column_letter(i + 1) for i, col in enumerate(self.df.columns)}
+
+    def _make_headers_bold(self, ws):
+        """Делает заголовки столбцов жирными"""
+        bold_font = Font(bold=True)
+        for cell in ws[1]:  # Первая строка содержит заголовки
+            cell.font = bold_font
 
     def _add_new_columns(self, ws, col_letters):
         last_col_idx = len(self.df.columns)

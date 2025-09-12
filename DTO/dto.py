@@ -9,6 +9,8 @@ class InfoDTO:
     wb_prices: pd.DataFrame
     med_prices: pd.DataFrame
     wb_cards_prices: pd.DataFrame
+    med_collection_1: pd.DataFrame
+    med_collection_2: pd.DataFrame
 
 
 @dataclass

@@ -1,4 +1,4 @@
-from io import StringIO
+from io import StringIO, BytesIO
 from abc import ABC, abstractmethod
 
 import pandas as pd
@@ -34,7 +34,6 @@ class ConvPricesMEDStrategy(ConverterStrategy):
     def converting(self, data) -> pd.DataFrame:
         """Преобразует данные о ценах на меде в DataFrame"""
         med_prices_df = pd.read_csv(StringIO(data.text), encoding='utf-8')
-        # med_prices_df = pd.read_csv('file_prices.csv', encoding='utf-8')
         med_prices_df.drop_duplicates(inplace=True)
         med_unique_prices_df = med_prices_df.sort_values('Цена со скидкой').drop_duplicates(['Артикул',
                                                                                              'Цена без скидки'])
@@ -49,6 +48,21 @@ class ConvPricesMEDStrategy(ConverterStrategy):
                                     axis=1)
         return med_unique_prices_df
 
+class ConvCollectionsMEDStrategy(ConverterStrategy):
+    def converting(self, data) -> pd.DataFrame:
+        """Преобразует данные о ценах на меде в DataFrame"""
+        med_collections_df = pd.read_excel(BytesIO(data.content))
+        med_collections_df.drop_duplicates(subset='Артикул', inplace=True)
+        med_collections_df.reset_index(inplace=True, drop=True)
+        med_without_unnecessary_columns = med_collections_df[['Артикул', 'Коллекция']]
+
+        columns_name = ['Артикул']
+
+        columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
+        med_without_unnecessary_columns.rename(columns_rename,
+                                    inplace=True,
+                                    axis=1)
+        return med_without_unnecessary_columns
 
 class ConvStocksStrategy(ConverterStrategy):
     def converting(self, data: dict) -> pd.DataFrame:

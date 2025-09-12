@@ -12,7 +12,10 @@ API_KEYS = {
 BASE_URLS = {
     'discounts-prices': 'https://discounts-prices-api.wildberries.ru',
     'seller-analytics': 'https://seller-analytics-api.wildberries.ru',
-    'med': 'https://med-online.ru/upload/acrit.exportproplus/file.prices.csv?1755164681'
+    'med_prices': 'https://med-online.ru/upload/acrit.exportproplus/file.prices.csv?1755164681',
+    'wb_http': 'https://catalog.wb.ru/sellers/v4/catalog',
+    'med_collections_1': 'https://med-online.ru/upload/acrit.exportproplus/file.OZON.xlsx?1740656479',
+    'med_collections_2': 'https://med-online.ru/upload/acrit.exportproplus/file.OZONdop.xlsx?1744707024'
 }
 
 BASE_COLUMNS_NAME = {'nmID': 'Артикул WB',
@@ -68,7 +71,5 @@ PARAMS = {
     'spp': '30',
     'supplier': '859504',
 }
-
-BASE_URL = 'https://catalog.wb.ru/sellers/v4/catalog'
 
 CLUB_PROCENT = 2

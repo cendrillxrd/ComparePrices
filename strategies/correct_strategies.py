@@ -17,6 +17,7 @@ class CorrPricesStrategy(CorrectorStrategy):
         for col in columns_name:
             df[col] = pd.to_numeric(df[col], downcast="integer")
 
+
         return df
 
 
@@ -39,3 +40,21 @@ class CorrWbPricesStrategy(CorrectorStrategy):
                    'Скидка WB',
                    '(WB) Цена со скидкой WB',
                    '(WB) Цена со скидкой WB клуба']]
+
+
+class CorrCollectionsStrategy(CorrectorStrategy):
+    def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
+        df.fillna(0, inplace=True)
+        return df[['Артикул WB',
+                   'Артикул продавца',
+                   'Категория',
+                   'Наименование',
+                   'Бренд',
+                   'Коллекция',
+                   '(WB) Цена без скидки',
+                   '(WB) Цена со скидкой продавца',
+                   'Скидка WB',
+                   '(WB) Цена со скидкой WB',
+                   '(WB) Цена со скидкой WB клуба',
+                   '(MED) Цена без скидки',
+                   '(MED) Цена со скидкой продавца']]

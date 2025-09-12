@@ -4,7 +4,7 @@ import pandas as pd
 import logging
 
 from workers.client import WildberriesAPIClient, WildberriesAPIClient, WildberriesHttpClient
-from strategies.request_strategies import ReqWbCardsPricesStrategy, ReqPricesStrategy, ReqStocksStrategy
+from strategies.request_strategies import ReqWbCardsPricesStrategy, ReqWBAPIPricesStrategy, ReqStocksStrategy
 from strategies.convert_strategies import ConvPricesWBStrategy, ConvWbCardsPricesStrategy, ConvStocksStrategy
 from logging_config import setup_logging
 from workers.converter import Converter
@@ -34,7 +34,7 @@ class WBService:
         self.wb_http_client = WildberriesHttpClient()
         self.converter = Converter()
 
-    @with_strategies(ReqPricesStrategy, ConvPricesWBStrategy, 'api')
+    @with_strategies(ReqWBAPIPricesStrategy, ConvPricesWBStrategy, 'api')
     def get_wb_prices(self) -> pd.DataFrame:
         logger.info('Получение данных о ценах')
         prices_json = self.wb_api_client.get_data()

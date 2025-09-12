@@ -5,7 +5,7 @@ from typing import Dict, Literal, Optional
 
 import requests
 
-from config import API_KEYS, BASE_URLS, BASE_URL, PARAMS, HEADERS, DELAY_INTERVAL
+from config import API_KEYS, BASE_URLS, PARAMS, HEADERS, DELAY_INTERVAL
 from strategies.request_strategies import RequestStrategy
 from logging_config import setup_logging
 
@@ -82,13 +82,12 @@ class WildberriesAPIClient(Client):
 
 class WildberriesHttpClient(Client):
     def __init__(self):
-        self.base_url = BASE_URL
+        self.base_url = BASE_URLS['wb_http']
         self.headers = HEADERS
         self.params = PARAMS
         self.__strategy = None
 
-    def make_request(self, page):
-        page = str(page)
+    def make_request(self, page: str):
         self.params['page'] = page
         self.headers['Referer'] = ''.join([self.headers['Referer'], page])
         response = requests.get(self.base_url, headers=self.headers, params=self.params)
@@ -114,13 +113,19 @@ class WildberriesHttpClient(Client):
 
 class MedClient(Client):
     def __init__(self):
-        self.url = BASE_URLS['med']
+        self.base_url = BASE_URLS
+        self.__strategy = None
 
-    def make_request(self):
-        logger.info(f'Выполнение запроса по адресу {self.url}')
-        response = requests.get(self.url)
+    def make_request(self, url_key: Literal['med_prices', 'med_collections_1', 'med_collections_2']):
+        url = f'{self.base_url[url_key]}'
+        logger.info(f'Выполнение запроса по адресу {url}')
+        response = requests.get(url)
         return response
 
-    def get_data(self):
-        prices = self.make_request()
-        return prices
+    def set_strategy(self, strategy: RequestStrategy):
+        self.__strategy = strategy
+
+    def get_data(self, **kwargs) -> list[dict]:
+        if self.__strategy is None:
+            raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
+        return self.__strategy.get_info(self)

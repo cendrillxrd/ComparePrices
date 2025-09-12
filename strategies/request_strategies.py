@@ -18,7 +18,7 @@ class RequestStrategy(ABC):
         pass
 
 
-class ReqPricesStrategy(RequestStrategy):
+class ReqWBAPIPricesStrategy(RequestStrategy):
     endpoint = "/api/v2/list/goods/filter"
     api_type = "Price_discount_API_KEY"
     url_key = "discounts-prices"
@@ -56,7 +56,7 @@ class ReqPricesStrategy(RequestStrategy):
 
 class ReqWbCardsPricesStrategy(RequestStrategy):
     @staticmethod
-    def get_product_list(client: 'Client', page: int):
+    def get_product_list(client: 'Client', page: str):
         logger.debug(f'Страница {page}')
         content = client.make_request(page)
         product_list = content['products']
@@ -68,11 +68,11 @@ class ReqWbCardsPricesStrategy(RequestStrategy):
         logger.info(f'Получение данных о ценах в карточках WB')
         cards = []
         page = 1
-        product_list = self.get_product_list(client, page)
+        product_list = self.get_product_list(client, str(page))
         while product_list != []:
             cards.extend(product_list)
             page += 1
-            product_list = self.get_product_list(client, page)
+            product_list = self.get_product_list(client, str(page))
         return cards
 
 class ReqStocksStrategy(RequestStrategy):
@@ -115,3 +115,21 @@ class ReqStocksStrategy(RequestStrategy):
                                            endpoint=self.endpoint)
             items = response['data']['items']
         return result
+
+class ReqPricesMEDStrategy(RequestStrategy):
+    url_key = "med_prices"
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        response = client.make_request(url_key=self.url_key)
+        return response
+
+class ReqCollectionsFirstMEDStrategy(RequestStrategy):
+    url_key = "med_collections_1"
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        response = client.make_request(url_key=self.url_key)
+        return response
+
+class ReqCollectionsSecondMEDStrategy(RequestStrategy):
+    url_key = "med_collections_2"
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        response = client.make_request(url_key=self.url_key)
+        return response

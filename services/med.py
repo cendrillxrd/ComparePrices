@@ -2,7 +2,8 @@ import pandas as pd
 import logging
 
 from workers.client import MedClient
-from strategies.convert_strategies import ConvPricesMEDStrategy
+from strategies.request_strategies import ReqPricesMEDStrategy, ReqCollectionsFirstMEDStrategy, ReqCollectionsSecondMEDStrategy
+from strategies.convert_strategies import ConvPricesMEDStrategy, ConvCollectionsMEDStrategy
 from workers.converter import Converter
 from logging_config import setup_logging
 
@@ -10,9 +11,10 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-def with_strategies(converter_strategy_cls):
+def with_strategies(med_strategy_cls, converter_strategy_cls):
     def decorator(method):
         def wrapper(self, *args, **kwargs):
+            self.med.set_strategy(med_strategy_cls())
             self.converter.set_strategy(converter_strategy_cls())
             return method(self, *args, **kwargs)
 
@@ -26,10 +28,23 @@ class MEDService:
         self.med = MedClient()
         self.converter = Converter()
 
-    @with_strategies(ConvPricesMEDStrategy)
+    @with_strategies(ReqPricesMEDStrategy, ConvPricesMEDStrategy)
     def get_med_prices(self) -> pd.DataFrame:
         logger.info('Получение данных о ценах на Меде')
         med_prices_csv = self.med.get_data()
-        # med_prices_csv = pd.read_csv('file_prices.csv')
         med_prices_df = self.converter.convert(med_prices_csv)
         return med_prices_df
+
+    @with_strategies(ReqCollectionsFirstMEDStrategy, ConvCollectionsMEDStrategy)
+    def get_med_collections_first(self) -> pd.DataFrame:
+        logger.info('Получение данных о коллекциях первой ссылки')
+        med_collections_csv = self.med.get_data()
+        med_collections_df = self.converter.convert(med_collections_csv)
+        return med_collections_df
+
+    @with_strategies(ReqCollectionsSecondMEDStrategy, ConvCollectionsMEDStrategy)
+    def get_med_collections_second(self) -> pd.DataFrame:
+        logger.info('Получение данных о коллекциях второй ссылки')
+        med_collections_csv = self.med.get_data()
+        med_collections_df = self.converter.convert(med_collections_csv)
+        return med_collections_df
