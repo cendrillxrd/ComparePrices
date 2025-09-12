@@ -21,7 +21,7 @@ BASE_URLS = {
 BASE_COLUMNS_NAME = {'nmID': 'Артикул WB',
                      'vendorCode': 'Артикул продавца',
                      'Артикул': 'Артикул продавца',
-                     'price': '(WB) Цена без скидки',
+                     'price': '(WB) Цена без скидки\n(зачеркнутая)',
                      'price_seller': '(WB) Цена со скидкой продавца',
                      'Цена без скидки': '(MED) Цена без скидки',
                      'Цена со скидкой': '(MED) Цена со скидкой продавца',
@@ -30,7 +30,8 @@ BASE_COLUMNS_NAME = {'nmID': 'Артикул WB',
                      'brandName': 'Бренд',
                      'stockCount': 'Остаток',
                      'toClientCount': 'В пути к клиенту',
-                     'fromClientCount': 'В пути от клиента'
+                     'fromClientCount': 'В пути от клиента',
+                     'discount': 'Скидка продавца'
                      }
 
 FILE_PATH = 'C:/Users/Admin/Desktop/'
@@ -45,7 +46,7 @@ COLUMNS_FOR_EXCEL_FORMATTER = {
     "discount_wb": "Скидка WB",
     "price_diff": "Разность цен ●",
     "med_price": "(MED) Цена со скидкой продавца",
-    "wb_price": "(WB) Цена со скидкой WB",
+    "wb_price": "(WB) Цена со скидкой WB\n(черная)",
 }
 
 DELAY_INTERVAL=10

@@ -9,3 +9,9 @@ green_fill = PatternFill(start_color='c9eaa9',  # Зеленый цвет
 red_fill = PatternFill(start_color='FF0000',  # Красный цвет
                        end_color='FF0000',
                        fill_type='solid')
+orange_fill = PatternFill(start_color="FFA500",
+                          end_color="FFA500",
+                          fill_type="solid")
+blue_fill = PatternFill(start_color="9FD6E5",
+                          end_color="9FD6E5",
+                          fill_type="solid")

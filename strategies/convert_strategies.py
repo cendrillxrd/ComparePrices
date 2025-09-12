@@ -18,7 +18,7 @@ class ConvPricesWBStrategy(ConverterStrategy):
 
         assigned_df = df.assign(price=df['sizes'].apply(lambda x: int(x[0]['price'])),
                                 price_seller=df['sizes'].apply(lambda x: int(x[0]['discountedPrice'])))
-        columns_name = ['nmID', 'vendorCode', 'price', 'price_seller']
+        columns_name = ['nmID', 'vendorCode', 'price', 'price_seller', 'discount']
         corrected_df = assigned_df[columns_name].copy()
 
         columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
@@ -98,8 +98,8 @@ class ConvWbCardsPricesStrategy(ConverterStrategy):
             price = card["sizes"][0]["price"]["product"] // 100
             price_with_wb_club = round(price * (1 - CLUB_PROCENT / 100))
             prices.append({'Артикул WB': articul,
-                           '(WB) Цена со скидкой WB': price,
-                           '(WB) Цена со скидкой WB клуба': price_with_wb_club,
+                           '(WB) Цена со скидкой WB\n(черная)': price,
+                           '(WB) Цена со скидкой WB клуба\n(красная/фиолетовая)': price_with_wb_club,
                            'Бренд': brand,
                            'Категория': category,
                            'Наименование': name,})

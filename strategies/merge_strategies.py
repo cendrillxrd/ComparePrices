@@ -45,5 +45,7 @@ class MergeWbCollectionsStrategy(MergeStrategies):
         self.merge_on = merge_on
 
     def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
+        df1[self.merge_on] = df1[self.merge_on].astype(str)
+        df2[self.merge_on] = df2[self.merge_on].astype(str)
         merged_df = pd.merge(df1, df2, on=self.merge_on, how='left')
         return merged_df

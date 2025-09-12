@@ -18,7 +18,6 @@ def main():
 
     info_redactor = InfoRedactor()
     info_redacted = info_redactor.redact_info(info)
-    info_redacted.to_csv('info.csv', index=False, encoding='cp1251')
     excel_formatter = ExcelFormatter(info_redacted)
     excel_formatter.get_excel_for_comparison()
     logger.info(f'Успешно завершено')
