@@ -13,6 +13,7 @@ API_KEYS = {
 }
 
 BASE_URLS = {
+    'dp-calendar': 'https://dp-calendar-api.wildberries.ru',
     'discounts-prices': 'https://discounts-prices-api.wildberries.ru',
     'seller-analytics': 'https://seller-analytics-api.wildberries.ru',
     'med_prices': 'https://med-online.ru/upload/acrit.exportproplus/file.prices.csv?1755164681',

@@ -14,6 +14,13 @@ class ConverterStrategy(ABC):
         pass
 
 
+class ConvPromoIDStrategy(ConverterStrategy):
+    def converting(self, data) -> list:
+        promotions = pd.DataFrame(data)
+        ids = promotions['id'].tolist()
+        int_ids = list(map(int, ids))
+        return int_ids
+
 class ConvPricesWBStrategy(ConverterStrategy):
     def converting(self, data: dict) -> pd.DataFrame:
         """Преобразует данные о ценах на WB в DataFrame"""

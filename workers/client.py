@@ -37,7 +37,7 @@ class WildberriesAPIClient(Client):
 
     def make_request(self, method: Literal['GET', 'POST'],
                      api_type: Literal['Analytics_Statistics_API_KEY', 'Price_discount_API_KEY'],
-                     url_key: Literal['seller-analytics', 'discounts-prices'],
+                     url_key: Literal['seller-analytics', 'discounts-prices', 'dp-calendar'],
                      endpoint: str,
                      params: Optional[Dict] = None,
                      payload: Optional[Dict] = None,

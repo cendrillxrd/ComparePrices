@@ -8,6 +8,7 @@ from config import LIMIT_PRICE, TIME_SLEEP_PRICE, LIMIT_STOCKS, TIME_SLEEP_STOCK
 from logging_config import setup_logging
 from DTO.stocks_dto import StocksDTO, asdict
 from DTO.price_dto import PriceDTO
+from DTO.promo_dto import PromoDTO
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -18,6 +19,21 @@ class RequestStrategy(ABC):
     def get_info(self, client: 'Client', **kwargs) -> list[dict]:
         pass
 
+class ReqWBAPIPromotionsStrategy(RequestStrategy):
+    endpoint = '/api/v1/calendar/promotions'
+    api_type = 'Price_discount_API_KEY'
+    url_key = 'dp-calendar'
+    promo_dto = PromoDTO()
+
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        logger.info(f'Получение данных об акциях')
+        params = asdict(self.promo_dto)
+        response = client.make_request(method='GET',
+                                       api_type=self.api_type,
+                                       url_key=self.url_key,
+                                       params=params,
+                                       endpoint=self.endpoint)
+        return response['data']['promotions']
 
 class ReqWBAPIPricesStrategy(RequestStrategy):
     endpoint = "/api/v2/list/goods/filter"
