@@ -3,9 +3,12 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 from config import BASE_COLUMNS_NAME, CLUB_PROCENT
-
+from DTO.columns_dto import ColumnsDTO
 
 class ConverterStrategy(ABC):
+    def __init__(self):
+        self.columns = ColumnsDTO()
+
     @abstractmethod
     def converting(self, data) -> pd.DataFrame:
         pass
@@ -18,7 +21,8 @@ class ConvPricesWBStrategy(ConverterStrategy):
 
         assigned_df = df.assign(price=df['sizes'].apply(lambda x: int(x[0]['price'])),
                                 price_seller=df['sizes'].apply(lambda x: int(x[0]['discountedPrice'])))
-        columns_name = ['nmID', 'vendorCode', 'price', 'price_seller', 'discount']
+
+        columns_name = [column for column in assigned_df.columns if column in BASE_COLUMNS_NAME]
         corrected_df = assigned_df[columns_name].copy()
 
         columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
@@ -35,33 +39,36 @@ class ConvPricesMEDStrategy(ConverterStrategy):
         """Преобразует данные о ценах на меде в DataFrame"""
         med_prices_df = pd.read_csv(StringIO(data.text), encoding='utf-8')
         med_prices_df.drop_duplicates(inplace=True)
-        med_unique_prices_df = med_prices_df.sort_values('Цена со скидкой').drop_duplicates(['Артикул',
-                                                                                             'Цена без скидки'])
-        med_unique_prices_df.reset_index(inplace=True, drop=True)
 
-        columns_name = ['Артикул', 'Цена без скидки', 'Цена со скидкой']
+        columns_name = [column for column in med_prices_df.columns if column in BASE_COLUMNS_NAME]
 
         columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
 
-        med_unique_prices_df.rename(columns_rename,
-                                    inplace=True,
-                                    axis=1)
+        med_prices_df.rename(columns_rename,
+                            inplace=True,
+                            axis=1)
+
+        med_unique_prices_df = med_prices_df.sort_values(self.columns.med_price_with_discount).drop_duplicates([self.columns.seller_article,
+                                                                                             self.columns.med_price_without_discount])
+        med_unique_prices_df.reset_index(inplace=True, drop=True)
+
         return med_unique_prices_df
 
 class ConvCollectionsMEDStrategy(ConverterStrategy):
     def converting(self, data) -> pd.DataFrame:
         """Преобразует данные о ценах на меде в DataFrame"""
         med_collections_df = pd.read_excel(BytesIO(data.content))
-        med_collections_df.drop_duplicates(subset='Артикул', inplace=True)
-        med_collections_df.reset_index(inplace=True, drop=True)
-        med_without_unnecessary_columns = med_collections_df[['Артикул', 'Коллекция']]
 
-        columns_name = ['Артикул']
+        columns_name = [column for column in med_collections_df.columns if column in BASE_COLUMNS_NAME]
 
         columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
-        med_without_unnecessary_columns.rename(columns_rename,
-                                    inplace=True,
-                                    axis=1)
+        med_collections_df.rename(columns_rename,
+                                  inplace=True,
+                                  axis=1)
+
+        med_collections_df.drop_duplicates(subset=self.columns.seller_article, inplace=True)
+        med_collections_df.reset_index(inplace=True, drop=True)
+        med_without_unnecessary_columns = med_collections_df[[self.columns.seller_article, self.columns.collection]]
         return med_without_unnecessary_columns
 
 class ConvStocksStrategy(ConverterStrategy):
@@ -74,7 +81,7 @@ class ConvStocksStrategy(ConverterStrategy):
                                 fromClientCount=df['metrics'].apply(lambda x: x['fromClientCount'])
                                 )
 
-        columns_name = ['nmID', 'stockCount', 'subjectName', 'name', 'brandName', 'toClientCount', 'fromClientCount']
+        columns_name = [column for column in assigned_df.columns if column in BASE_COLUMNS_NAME]
         corrected_df = assigned_df[columns_name].copy()
         corrected_no_zeros_df = corrected_df.loc[~(corrected_df == 0).all(axis=1)]
 
@@ -97,11 +104,11 @@ class ConvWbCardsPricesStrategy(ConverterStrategy):
             name = card['name']
             price = card["sizes"][0]["price"]["product"] // 100
             price_with_wb_club = round(price * (1 - CLUB_PROCENT / 100))
-            prices.append({'Артикул WB': articul,
-                           '(WB) Цена со скидкой WB\n(черная)': price,
-                           '(WB) Цена со скидкой WB клуба\n(красная/фиолетовая)': price_with_wb_club,
-                           'Бренд': brand,
-                           'Категория': category,
-                           'Наименование': name,})
+            prices.append({self.columns.wb_article: articul,
+                           self.columns.wb_price_with_wb_discount: price,
+                           self.columns.wb_price_with_wb_club: price_with_wb_club,
+                           self.columns.brand: brand,
+                           self.columns.category: category,
+                           self.columns.name: name,})
             prices_df = pd.DataFrame(prices)
         return prices_df

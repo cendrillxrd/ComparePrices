@@ -2,6 +2,9 @@ import os
 
 from dotenv import load_dotenv
 
+from DTO.columns_dto import ColumnsDTO
+columns = ColumnsDTO()
+
 load_dotenv()
 
 API_KEYS = {
@@ -18,20 +21,20 @@ BASE_URLS = {
     'med_collections_2': 'https://med-online.ru/upload/acrit.exportproplus/file.OZONdop.xlsx?1744707024'
 }
 
-BASE_COLUMNS_NAME = {'nmID': 'Артикул WB',
-                     'vendorCode': 'Артикул продавца',
-                     'Артикул': 'Артикул продавца',
-                     'price': '(WB) Цена без скидки\n(зачеркнутая)',
-                     'price_seller': '(WB) Цена со скидкой продавца',
-                     'Цена без скидки': '(MED) Цена без скидки',
-                     'Цена со скидкой': '(MED) Цена со скидкой продавца',
-                     'subjectName': 'Категория',
-                     'name': 'Наименование',
-                     'brandName': 'Бренд',
-                     'stockCount': 'Остаток',
-                     'toClientCount': 'В пути к клиенту',
-                     'fromClientCount': 'В пути от клиента',
-                     'discount': 'Скидка продавца'
+BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
+                     'vendorCode': columns.seller_article,
+                     'Артикул': columns.seller_article,
+                     'price': columns.wb_price_without_discount,
+                     'price_seller': columns.wb_price_with_seller_discount,
+                     'Цена без скидки': columns.med_price_without_discount,
+                     'Цена со скидкой': columns.med_price_with_discount,
+                     'subjectName': columns.category,
+                     'name': columns.name,
+                     'brandName': columns.name,
+                     'stockCount': columns.stock_count,
+                     'toClientCount': columns.to_client_count,
+                     'fromClientCount': columns.to_client_count,
+                     'discount': columns.seller_discount,
                      }
 
 FILE_PATH = 'C:/Users/Admin/Desktop/'
@@ -43,10 +46,10 @@ TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
 
 COLUMNS_FOR_EXCEL_FORMATTER = {
-    "discount_wb": "Скидка WB",
-    "price_diff": "Разность цен ●",
-    "med_price": "(MED) Цена со скидкой продавца",
-    "wb_price": "(WB) Цена со скидкой WB\n(черная)",
+    "discount_wb": columns.wb_discount,
+    "price_diff": columns.price_difference,
+    "med_price": columns.med_price_with_discount,
+    "wb_price": columns.wb_price_with_wb_discount,
 }
 
 DELAY_INTERVAL=10

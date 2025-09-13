@@ -6,7 +6,8 @@ from typing import Union
 
 from config import LIMIT_PRICE, TIME_SLEEP_PRICE, LIMIT_STOCKS, TIME_SLEEP_STOCKS
 from logging_config import setup_logging
-from DTO.dto import StocksDTO, PriceDTO, asdict
+from DTO.stocks_dto import StocksDTO, asdict
+from DTO.price_dto import PriceDTO
 
 setup_logging()
 logger = logging.getLogger(__name__)

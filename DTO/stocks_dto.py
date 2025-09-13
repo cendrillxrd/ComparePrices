@@ -1,17 +1,6 @@
 from dataclasses import dataclass, field, asdict
-import pandas as pd
 from utils.date_helpers import get_today_date
-from config import LIMIT_STOCKS, LIMIT_PRICE
-
-
-@dataclass
-class InfoDTO:
-    wb_prices: pd.DataFrame
-    med_prices: pd.DataFrame
-    wb_cards_prices: pd.DataFrame
-    med_collection_1: pd.DataFrame
-    med_collection_2: pd.DataFrame
-
+from config import LIMIT_STOCKS
 
 @dataclass
 class StocksDTO:
@@ -41,9 +30,3 @@ class StocksDTO:
                 'nonLiquid',
                 'invalidData'
             ]
-
-
-@dataclass
-class PriceDTO:
-    limit: int = LIMIT_PRICE
-    offset: int = 0

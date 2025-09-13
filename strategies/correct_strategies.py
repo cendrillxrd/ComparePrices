@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
 
 import pandas as pd
+from DTO.columns_dto import ColumnsDTO
 
 
 class CorrectorStrategy(ABC):
+    def __init__(self):
+        self.columns = ColumnsDTO()
     @abstractmethod
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
         pass
@@ -13,7 +16,8 @@ class CorrPricesStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
         df.fillna(0, inplace=True)
 
-        columns_name = ['(MED) Цена без скидки', '(MED) Цена со скидкой продавца']
+        columns_name = [self.columns.med_price_without_discount,
+                        self.columns.med_price_without_discount]
         for col in columns_name:
             df[col] = pd.to_numeric(df[col], downcast="integer")
 
@@ -23,46 +27,46 @@ class CorrPricesStrategy(CorrectorStrategy):
 
 class CorrStocksStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
-        df.drop(['Остаток', 'В пути к клиенту', 'В пути от клиента'], axis=1, inplace=True)
+        df.drop([self.columns.stock_count, self.columns.to_client_count, self.columns.from_client_count], axis=1, inplace=True)
         return df
 
 
 class CorrWbPricesStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
-        df['Скидка WB'] = 100 - round((df['(WB) Цена со скидкой WB\n(черная)'] / df['(WB) Цена со скидкой продавца']) * 100)
+        df[self.columns.wb_discount] = 100 - round((df[self.columns.wb_price_with_wb_discount] / df[self.columns.wb_price_with_seller_discount]) * 100)
 
-        return df[['Артикул WB',
-                   'Артикул продавца',
-                   'Категория',
-                   'Наименование',
-                   'Бренд',
-                   '(WB) Цена без скидки\n(зачеркнутая)',
-                   'Скидка продавца',
-                   '(WB) Цена со скидкой продавца',
-                   'Скидка WB',
-                   '(WB) Цена со скидкой WB\n(черная)',
-                   '(WB) Цена со скидкой WB клуба\n(красная/фиолетовая)',]]
+        return df[[self.columns.wb_article,
+                   self.columns.seller_article,
+                   self.columns.category,
+                   self.columns.name,
+                   self.columns.brand,
+                   self.columns.wb_price_without_discount,
+                   self.columns.seller_discount,
+                   self.columns.wb_price_with_seller_discount,
+                   self.columns.wb_discount,
+                   self.columns.wb_price_with_wb_discount,
+                   self.columns.wb_price_with_wb_club,]]
 
 
 class CorrCollectionsStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
         df.fillna(0, inplace=True)
-        df['Скидка для равновесия'] = round(100 * (1 - df['(MED) Цена со скидкой продавца'] / df['(WB) Цена со скидкой WB\n(черная)']))
-        df['Скидка для равновесия'] = df['Скидка для равновесия'].clip(lower=0)
-        df['Разность цен ●'] = df['(MED) Цена со скидкой продавца'] - df['(WB) Цена со скидкой WB\n(черная)']
-        return df[['Артикул WB',
-                   'Артикул продавца',
-                   'Категория',
-                   'Наименование',
-                   'Бренд',
-                   'Коллекция',
-                   '(WB) Цена без скидки\n(зачеркнутая)',
-                   'Скидка продавца',
-                   '(WB) Цена со скидкой продавца',
-                   'Скидка WB',
-                   '(WB) Цена со скидкой WB\n(черная)',
-                   '(WB) Цена со скидкой WB клуба\n(красная/фиолетовая)',
-                   '(MED) Цена без скидки',
-                   '(MED) Цена со скидкой продавца',
-                   'Разность цен ●',
-                   'Скидка для равновесия',]]
+        df[self.columns.equilibrium_discount] = round(100 * (1 - df[self.columns.med_price_with_discount] / df[self.columns.wb_price_with_wb_discount]))
+        df[self.columns.equilibrium_discount] = df[self.columns.equilibrium_discount].clip(lower=0)
+        df[self.columns.price_difference] = df[self.columns.med_price_with_discount] - df[self.columns.wb_price_with_wb_discount]
+        return df[[self.columns.wb_article,
+                   self.columns.seller_article,
+                   self.columns.category,
+                   self.columns.name,
+                   self.columns.brand,
+                   self.columns.collection,
+                   self.columns.wb_price_without_discount,
+                   self.columns.seller_discount,
+                   self.columns.wb_price_with_seller_discount,
+                   self.columns.wb_discount,
+                   self.columns.wb_price_with_wb_discount,
+                   self.columns.wb_price_with_wb_club,
+                   self.columns.med_price_without_discount,
+                   self.columns.med_price_with_discount,
+                   self.columns.price_difference,
+                   self.columns.equilibrium_discount,]]

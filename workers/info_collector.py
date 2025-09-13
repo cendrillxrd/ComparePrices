@@ -3,7 +3,7 @@ import logging
 from services.wb import WBService
 from services.med import MEDService
 from logging_config import setup_logging
-from DTO.dto import InfoDTO
+from DTO.info_dto import InfoDTO
 setup_logging()
 logger = logging.getLogger(__name__)
 
