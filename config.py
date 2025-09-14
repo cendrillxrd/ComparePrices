@@ -54,6 +54,7 @@ COLUMNS_FOR_EXCEL_FORMATTER = {
     "price_diff": columns.price_difference,
     "med_price": columns.med_price_with_discount,
     "wb_price": columns.wb_price_with_wb_discount,
+    'seller_discount': columns.seller_discount,
 }
 
 DELAY_INTERVAL=10

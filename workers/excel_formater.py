@@ -4,7 +4,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
-from utils.excel_helper import red_fill, yellow_fill, green_fill, orange_fill, blue_fill
+from utils.excel_helper import red_fill, yellow_fill, green_fill, orange_fill, blue_fill, pink_fill
 from config import COLUMNS_FOR_EXCEL_FORMATTER
 from logging_config import setup_logging
 
@@ -42,43 +42,14 @@ class ExcelFormatter:
         for cell in ws[1]:  # Первая строка содержит заголовки
             cell.font = bold_font
 
-    # def _add_new_columns(self, ws, col_letters):
-    #     last_col_idx = len(self.df.columns)
-    #     new_columns = [COLUMNS_FOR_EXCEL_FORMATTER["price_diff"]]
-    #     for i, col_name in enumerate(new_columns, start=1):
-    #         col_letter = get_column_letter(last_col_idx + i)
-    #         col_letters[col_name] = col_letter
-    #         ws[f'{col_letter}1'] = col_name
-
-    # @staticmethod
-    # def _formula_price_diff(cols, row) -> str:
-    #     return (f"={cols[COLUMNS_FOR_EXCEL_FORMATTER['med_price']]}{row}-"
-    #             f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['wb_price']]}{row}")
-
-    # @staticmethod
-    # def _formula_equilibrium(cols, row) -> str:
-    #     return (f"=ROUND(100*(1 - {cols[COLUMNS_FOR_EXCEL_FORMATTER['med_price']]}{row}/"
-    #             f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['wb_price']]}{row}))")
-
     def _fill_formulas(self, ws, cols):
         for row in range(2, len(self.df) + 2):
-            # cell_compare = ws[f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['price_diff']]}{row}"]
-            # cell_compare.value = self._formula_price_diff(cols, row)
 
-            # cell_compare = ws[f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['equilibrium']]}{row}"]
-            # cell_compare.value = self._formula_equilibrium(cols, row)
-
-            ws[f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['discount_wb']]}{row}"].fill = green_fill
+            ws[f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['discount_wb']]}{row}"].fill = pink_fill
+            ws[f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['seller_discount']]}{row}"].fill = green_fill
             columns_for_blue = ['(WB) Цена со скидкой WB\n(черная)','(MED) Цена со скидкой продавца']
             for col_name in columns_for_blue:
                 ws[f"{cols[col_name]}{row}"].fill = blue_fill
-
-            # ws[f"{cols[COLUMNS_FOR_EXCEL_FORMATTER['discount_wb']]}{row}"].fill = green_fill
-            # columns_for_blue = ['(WB) Цена без скидки\n(зачеркнутая)', '(WB) Цена со скидкой продавца',
-            #                     '(WB) Цена со скидкой WB\n(черная)',
-            #                     '(WB) Цена со скидкой WB клуба\n(красная/фиолетовая)']
-            # for col_name in columns_for_blue:
-            #     ws[f"{cols[col_name]}{row}"].fill = blue_fill
 
     def _apply_conditional_formatting(self, ws, cols):
         last_row = len(self.df) + 2

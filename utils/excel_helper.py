@@ -15,3 +15,7 @@ orange_fill = PatternFill(start_color="FFA500",
 blue_fill = PatternFill(start_color="9FD6E5",
                           end_color="9FD6E5",
                           fill_type="solid")
+
+pink_fill = PatternFill(start_color="EC6FD8",
+                        end_color="EC6FD8",
+                        fill_type="solid")

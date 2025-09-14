@@ -4,8 +4,10 @@ import logging
 from workers.merger import Merger
 from workers.corrector import Corrector
 from logging_config import setup_logging
-from strategies.correct_strategies import CorrPricesStrategy, CorrStocksStrategy, CorrWbPricesStrategy, CorrCollectionsStrategy
-from strategies.merge_strategies import MergePricesStrategy, MergeStocksStrategy, MergeWbPricesStrategy, MergeWbCollectionsStrategy, MergeCollectionsStrategy
+from strategies.correct_strategies import (CorrPricesStrategy, CorrStocksStrategy, CorrWbPricesStrategy,
+                                           CorrCollectionsStrategy, CorrPromoStrategy)
+from strategies.merge_strategies import (MergePricesStrategy, MergeStocksStrategy, MergeWbPricesStrategy,
+                                         MergeWbCollectionsStrategy, MergeCollectionsStrategy, MergePromoStrategy)
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -30,7 +32,7 @@ class RedactionService:
         self.merger = Merger()
         self.corrector = Corrector()
 
-    # @with_strategies(MergePricesStrategy, CorrPricesStrategy)
+    @with_strategies(MergePromoStrategy, CorrPromoStrategy)
     def merge_with_promotions(self, wb_df: pd.DataFrame, promo_df: pd.DataFrame) -> pd.DataFrame:
         logger.info('Обработка данных по акциям WB')
         prices_merged = self.merger.merge(wb_df, promo_df)
