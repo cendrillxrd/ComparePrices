@@ -2,13 +2,13 @@ import random
 import time
 import logging
 from abc import ABC, abstractmethod
-from typing import Union
 
 from config import LIMIT_PRICE, TIME_SLEEP_PRICE, LIMIT_STOCKS, TIME_SLEEP_STOCKS
 from logging_config import setup_logging
 from DTO.stocks_dto import StocksDTO, asdict
 from DTO.price_dto import PriceDTO
 from DTO.promo_dto import PromoDTO
+from DTO.promo_goods import PromoGoodsDTO
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -34,6 +34,44 @@ class ReqWBAPIPromotionsStrategy(RequestStrategy):
                                        params=params,
                                        endpoint=self.endpoint)
         return response['data']['promotions']
+
+class ReqWBAPIPromotionsGoodsStrategy(RequestStrategy):
+    endpoint = "/api/v1/calendar/promotions/nomenclatures"
+    api_type = "Price_discount_API_KEY"
+    url_key = "dp-calendar"
+    promo_goods_dto = PromoGoodsDTO()
+
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        logger.info(f'Получение данных о товарах для акций')
+        result = []
+        count = 0
+        params = asdict(self.promo_goods_dto)
+        params['promotionID'] = kwargs['promotion_id']
+        response = client.make_request(method='GET',
+                                       api_type=self.api_type,
+                                       url_key=self.url_key,
+                                       params=params,
+                                       endpoint=self.endpoint)
+        list_goods = response['data']['nomenclatures']
+        antifreeze = 1000
+
+        while list_goods and antifreeze:
+            antifreeze -= 1
+            self.promo_goods_dto.offset += LIMIT_PRICE
+            result.extend(list_goods)
+            time.sleep(TIME_SLEEP_PRICE)
+            count += len(list_goods)
+            logger.debug(f'Карточек загружено {count}')
+
+            params = asdict(self.promo_goods_dto)
+            params['promotionID'] = kwargs['promotion_id']
+            response = client.make_request(method='GET',
+                                           api_type=self.api_type,
+                                           url_key=self.url_key,
+                                           params=params,
+                                           endpoint=self.endpoint)
+            list_goods = response['data']['nomenclatures']
+        return result
 
 class ReqWBAPIPricesStrategy(RequestStrategy):
     endpoint = "/api/v2/list/goods/filter"
@@ -98,7 +136,7 @@ class ReqStocksStrategy(RequestStrategy):
     url_key = "seller-analytics"
     stock_dto = StocksDTO()
 
-    def get_info(self, client, nm_ids=None) -> list[dict]:
+    def get_info(self, client, nm_ids=None, **kwargs) -> list[dict]:
         result = []
         count = 0
         payload = asdict(self.stock_dto)

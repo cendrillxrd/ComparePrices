@@ -21,3 +21,4 @@ class ColumnsDTO:
     stock_count: str = 'Остаток',
     to_client_count: str = 'В пути к клиенту',
     from_client_count: str = 'В пути от клиента'
+    plan_discount: str = 'Скидка для акции'

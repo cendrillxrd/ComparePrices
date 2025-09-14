@@ -13,11 +13,31 @@ class ConverterStrategy(ABC):
     def converting(self, data) -> pd.DataFrame:
         pass
 
+class ConvPromoGoodsWBStrategy(ConverterStrategy):
+    def converting(self, data: dict) -> pd.DataFrame:
+        """Преобразует данные о ценах на WB в DataFrame"""
+        df = pd.DataFrame(data)
+
+        columns_name = [column for column in df.columns if column in BASE_COLUMNS_NAME]
+        columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
+        df.rename(columns_rename,
+                                          inplace=True,
+                                          axis=1)
+
+        min_discount_promotions_df = df.sort_values(self.columns.wb_article).drop_duplicates(
+            [self.columns.wb_article,
+             self.columns.plan_discount])
+        min_discount_promotions_df.reset_index(inplace=True, drop=True)
+
+        min_discount_promotions_df = min_discount_promotions_df[[self.columns.wb_article, self.columns.plan_discount]].copy()
+
+        return min_discount_promotions_df
 
 class ConvPromoIDStrategy(ConverterStrategy):
-    def converting(self, data) -> list:
+    def converting(self, data: dict) -> list:
         promotions = pd.DataFrame(data)
-        ids = promotions['id'].tolist()
+        filtered_promotions = promotions[promotions['type'] == 'regular']
+        ids = filtered_promotions['id'].tolist()
         int_ids = list(map(int, ids))
         return int_ids
 

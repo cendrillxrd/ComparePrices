@@ -30,6 +30,13 @@ class RedactionService:
         self.merger = Merger()
         self.corrector = Corrector()
 
+    # @with_strategies(MergePricesStrategy, CorrPricesStrategy)
+    def merge_with_promotions(self, wb_df: pd.DataFrame, promo_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка данных по акциям WB')
+        prices_merged = self.merger.merge(wb_df, promo_df)
+        prices_corrected = self.corrector.correct(prices_merged)
+        return prices_corrected
+
     @with_strategies(MergePricesStrategy, CorrPricesStrategy)
     def merge_with_med_prices(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
         logger.info('Обработка данных по ценам WB и MED')

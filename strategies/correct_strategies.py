@@ -51,7 +51,7 @@ class CorrWbPricesStrategy(CorrectorStrategy):
 class CorrCollectionsStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
         df.fillna(0, inplace=True)
-        df[self.columns.equilibrium_discount] = round(100 * (1 - df[self.columns.med_price_with_discount] / df[self.columns.wb_price_with_wb_discount]))
+        df[self.columns.equilibrium_discount] = round(100 * (1 - df[self.columns.med_price_with_discount] / df[self.columns.wb_price_without_discount]))
         df[self.columns.equilibrium_discount] = df[self.columns.equilibrium_discount].clip(lower=0)
         df[self.columns.price_difference] = df[self.columns.med_price_with_discount] - df[self.columns.wb_price_with_wb_discount]
         return df[[self.columns.wb_article,

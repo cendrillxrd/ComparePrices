@@ -3,9 +3,11 @@ from typing import Literal
 import pandas as pd
 import logging
 
-from workers.client import WildberriesAPIClient, WildberriesAPIClient, WildberriesHttpClient
-from strategies.request_strategies import ReqWbCardsPricesStrategy, ReqWBAPIPricesStrategy, ReqStocksStrategy, ReqWBAPIPromotionsStrategy
-from strategies.convert_strategies import ConvPricesWBStrategy, ConvWbCardsPricesStrategy, ConvStocksStrategy, ConvPromoIDStrategy
+from workers.client import WildberriesAPIClient, WildberriesHttpClient
+from strategies.request_strategies import (ReqWbCardsPricesStrategy, ReqWBAPIPricesStrategy,
+                                           ReqStocksStrategy, ReqWBAPIPromotionsStrategy, ReqWBAPIPromotionsGoodsStrategy)
+from strategies.convert_strategies import (ConvPricesWBStrategy, ConvWbCardsPricesStrategy,
+                                           ConvStocksStrategy, ConvPromoIDStrategy, ConvPromoGoodsWBStrategy)
 from logging_config import setup_logging
 from workers.converter import Converter
 
@@ -34,12 +36,26 @@ class WBService:
         self.wb_http_client = WildberriesHttpClient()
         self.converter = Converter()
 
+    def get_wb_promotions_plan_discounts(self):
+        promo_ids = self.get_wb_promo_ids()
+        promo_goods = self.get_wb_promo_goods(promo_ids)
+        return promo_goods
+
     @with_strategies(ReqWBAPIPromotionsStrategy, ConvPromoIDStrategy, 'api')
-    def get_wb_promo_ids(self) -> pd.DataFrame:
+    def get_wb_promo_ids(self) -> list:
         logger.info('Получение данных об акциях')
         promotions = self.wb_api_client.get_data()
         promotions_ids = self.converter.convert(promotions)
         return promotions_ids
+
+    @with_strategies(ReqWBAPIPromotionsGoodsStrategy, ConvPromoGoodsWBStrategy, 'api')
+    def get_wb_promo_goods(self, promotion_ids: list) -> pd.DataFrame:
+        logger.info('Получение данных о товарах для акции')
+        promotions_goods = []
+        for promo_id in promotion_ids:
+            promotions_goods.extend(self.wb_api_client.get_data(promotion_id=promo_id))
+        promotions_goods_df = self.converter.convert(promotions_goods)
+        return promotions_goods_df
 
     @with_strategies(ReqWBAPIPricesStrategy, ConvPricesWBStrategy, 'api')
     def get_wb_prices(self) -> pd.DataFrame:

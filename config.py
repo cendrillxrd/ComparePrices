@@ -36,12 +36,15 @@ BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
                      'toClientCount': columns.to_client_count,
                      'fromClientCount': columns.to_client_count,
                      'discount': columns.seller_discount,
+                     'planDiscount': columns.plan_discount,
+                     'id': columns.wb_article,
                      }
 
 FILE_PATH = 'C:/Users/Admin/Desktop/'
 
 LIMIT_PRICE = 1000  # <= 1000
 LIMIT_STOCKS = 1000  # <= 1000
+LIMIT_PROMO_GOODS = 1000 # <= 1000
 
 TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
