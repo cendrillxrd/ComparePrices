@@ -1,12 +1,15 @@
 import logging
+
 from openpyxl import Workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.formatting.rule import FormulaRule
-from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
-from utils.excel_helper import red_fill, yellow_fill, green_fill, orange_fill, blue_fill, pink_fill
+from openpyxl.utils import get_column_letter
+from openpyxl.utils.dataframe import dataframe_to_rows
+
 from config import COLUMNS_FOR_EXCEL_FORMATTER
 from logging_config import setup_logging
+from utils.excel_helper import (blue_fill, green_fill, orange_fill, pink_fill,
+                                red_fill, yellow_fill)
 
 setup_logging()
 logger = logging.getLogger(__name__)

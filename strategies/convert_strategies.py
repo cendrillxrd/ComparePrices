@@ -1,9 +1,11 @@
-from io import StringIO, BytesIO
 from abc import ABC, abstractmethod
+from io import BytesIO, StringIO
 
 import pandas as pd
+
 from config import BASE_COLUMNS_NAME, CLUB_PROCENT
 from DTO.columns_dto import ColumnsDTO
+
 
 class ConverterStrategy(ABC):
     def __init__(self):

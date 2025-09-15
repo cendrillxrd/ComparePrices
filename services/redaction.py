@@ -1,13 +1,21 @@
-import pandas as pd
 import logging
 
-from workers.merger import Merger
-from workers.corrector import Corrector
+import pandas as pd
+
 from logging_config import setup_logging
-from strategies.correct_strategies import (CorrPricesStrategy, CorrStocksStrategy, CorrWbPricesStrategy,
-                                           CorrCollectionsStrategy, CorrPromoStrategy)
-from strategies.merge_strategies import (MergePricesStrategy, MergeStocksStrategy, MergeWbPricesStrategy,
-                                         MergeWbCollectionsStrategy, MergeCollectionsStrategy, MergePromoStrategy)
+from strategies.correct_strategies import (CorrCollectionsStrategy,
+                                           CorrPricesStrategy,
+                                           CorrPromoStrategy,
+                                           CorrStocksStrategy,
+                                           CorrWbPricesStrategy)
+from strategies.merge_strategies import (MergeCollectionsStrategy,
+                                         MergePricesStrategy,
+                                         MergePromoStrategy,
+                                         MergeStocksStrategy,
+                                         MergeWbCollectionsStrategy,
+                                         MergeWbPricesStrategy)
+from workers.corrector import Corrector
+from workers.merger import Merger
 
 setup_logging()
 logger = logging.getLogger(__name__)

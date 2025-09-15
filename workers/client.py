@@ -1,13 +1,13 @@
-from abc import ABC, abstractmethod
-import time
 import logging
+import time
+from abc import ABC, abstractmethod
 from typing import Dict, Literal, Optional
 
 import requests
 
-from config import API_KEYS, BASE_URLS, PARAMS, HEADERS, DELAY_INTERVAL
-from strategies.request_strategies import RequestStrategy
+from config import API_KEYS, BASE_URLS, DELAY_INTERVAL, HEADERS, PARAMS
 from logging_config import setup_logging
+from strategies.request_strategies import RequestStrategy
 
 setup_logging()
 logger = logging.getLogger(__name__)

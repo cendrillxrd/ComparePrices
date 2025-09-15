@@ -1,6 +1,8 @@
-from dataclasses import dataclass, field, asdict
-from utils.date_helpers import get_today_date
+from dataclasses import asdict, dataclass, field
+
 from config import LIMIT_STOCKS
+from utils.date_helpers import get_today_date
+
 
 @dataclass
 class StocksDTO:

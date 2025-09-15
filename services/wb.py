@@ -1,14 +1,20 @@
+import logging
 from typing import Literal
 
 import pandas as pd
-import logging
 
-from workers.client import WildberriesAPIClient, WildberriesHttpClient
-from strategies.request_strategies import (ReqWbCardsPricesStrategy, ReqWBAPIPricesStrategy,
-                                           ReqStocksStrategy, ReqWBAPIPromotionsStrategy, ReqWBAPIPromotionsGoodsStrategy)
-from strategies.convert_strategies import (ConvPricesWBStrategy, ConvWbCardsPricesStrategy,
-                                           ConvStocksStrategy, ConvPromoIDStrategy, ConvPromoGoodsWBStrategy)
 from logging_config import setup_logging
+from strategies.convert_strategies import (ConvPricesWBStrategy,
+                                           ConvPromoGoodsWBStrategy,
+                                           ConvPromoIDStrategy,
+                                           ConvStocksStrategy,
+                                           ConvWbCardsPricesStrategy)
+from strategies.request_strategies import (ReqStocksStrategy,
+                                           ReqWBAPIPricesStrategy,
+                                           ReqWBAPIPromotionsGoodsStrategy,
+                                           ReqWBAPIPromotionsStrategy,
+                                           ReqWbCardsPricesStrategy)
+from workers.client import WildberriesAPIClient, WildberriesHttpClient
 from workers.converter import Converter
 
 setup_logging()

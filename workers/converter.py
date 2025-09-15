@@ -1,6 +1,8 @@
-import pandas as pd
-from strategies.convert_strategies import ConverterStrategy
 from typing import Union
+
+import pandas as pd
+
+from strategies.convert_strategies import ConverterStrategy
 
 
 class Converter:

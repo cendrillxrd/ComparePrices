@@ -1,11 +1,15 @@
-import pandas as pd
 import logging
 
-from workers.client import MedClient
-from strategies.request_strategies import ReqPricesMEDStrategy, ReqCollectionsFirstMEDStrategy, ReqCollectionsSecondMEDStrategy
-from strategies.convert_strategies import ConvPricesMEDStrategy, ConvCollectionsMEDStrategy
-from workers.converter import Converter
+import pandas as pd
+
 from logging_config import setup_logging
+from strategies.convert_strategies import (ConvCollectionsMEDStrategy,
+                                           ConvPricesMEDStrategy)
+from strategies.request_strategies import (ReqCollectionsFirstMEDStrategy,
+                                           ReqCollectionsSecondMEDStrategy,
+                                           ReqPricesMEDStrategy)
+from workers.client import MedClient
+from workers.converter import Converter
 
 setup_logging()
 logger = logging.getLogger(__name__)

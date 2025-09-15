@@ -1,7 +1,7 @@
 import pandas as pd
 
-from services.redaction import RedactionService
 from DTO.info_dto import InfoDTO
+from services.redaction import RedactionService
 
 
 class InfoRedactor:

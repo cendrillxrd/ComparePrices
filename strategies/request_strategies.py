@@ -1,14 +1,15 @@
+import logging
 import random
 import time
-import logging
 from abc import ABC, abstractmethod
 
-from config import LIMIT_PRICE, TIME_SLEEP_PRICE, LIMIT_STOCKS, TIME_SLEEP_STOCKS
-from logging_config import setup_logging
-from DTO.stocks_dto import StocksDTO, asdict
+from config import (LIMIT_PRICE, LIMIT_STOCKS, TIME_SLEEP_PRICE,
+                    TIME_SLEEP_STOCKS)
 from DTO.price_dto import PriceDTO
 from DTO.promo_dto import PromoDTO
 from DTO.promo_goods import PromoGoodsDTO
+from DTO.stocks_dto import StocksDTO, asdict
+from logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger(__name__)

@@ -1,7 +1,9 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+
 import pandas as pd
 
 from utils.date_helpers import get_current_date_iso
+
 
 @dataclass
 class PromoDTO:

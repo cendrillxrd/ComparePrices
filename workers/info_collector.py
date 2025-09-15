@@ -1,9 +1,10 @@
 import logging
 
-from services.wb import WBService
-from services.med import MEDService
-from logging_config import setup_logging
 from DTO.info_dto import InfoDTO
+from logging_config import setup_logging
+from services.med import MEDService
+from services.wb import WBService
+
 setup_logging()
 logger = logging.getLogger(__name__)
 

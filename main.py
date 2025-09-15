@@ -2,10 +2,10 @@ import logging
 
 import pandas as pd
 
-from workers.info_collector import InfoCollector
-from workers.info_redactor import InfoRedactor
 from logging_config import setup_logging
 from workers.excel_formater import ExcelFormatter
+from workers.info_collector import InfoCollector
+from workers.info_redactor import InfoRedactor
 
 setup_logging()
 logger = logging.getLogger(__name__)

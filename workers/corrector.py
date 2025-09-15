@@ -1,4 +1,5 @@
 import pandas as pd
+
 from strategies.correct_strategies import CorrectorStrategy
 
 
