@@ -18,10 +18,12 @@ class CorrPricesStrategy(CorrectorStrategy):
         df.fillna(0, inplace=True)
 
         columns_name = [self.columns.med_price_without_discount,
-                        self.columns.med_price_without_discount]
+                        self.columns.med_price_with_discount]
+
         for col in columns_name:
             df[col] = pd.to_numeric(df[col], downcast="integer")
 
+        df[self.columns.med_discount] = 100 - round((df[self.columns.med_price_with_discount] / df[self.columns.med_price_without_discount]) * 100)
 
         return df
 
@@ -59,6 +61,7 @@ class CorrCollectionsStrategy(CorrectorStrategy):
         df.fillna(0, inplace=True)
         df[self.columns.equilibrium_discount] = round(100 * (1 - df[self.columns.med_price_with_discount] / (df[self.columns.wb_price_without_discount] * (1 - df[self.columns.wb_discount] / 100))))
         df[self.columns.equilibrium_discount] = df[self.columns.equilibrium_discount].clip(lower=0)
+        df.loc[df[self.columns.equilibrium_discount] == 100, self.columns.equilibrium_discount] = -1
         df[self.columns.price_difference] = df[self.columns.med_price_with_discount] - df[self.columns.wb_price_with_wb_discount]
         return df[[self.columns.wb_article,
                    self.columns.seller_article,
@@ -73,6 +76,7 @@ class CorrCollectionsStrategy(CorrectorStrategy):
                    self.columns.wb_price_with_wb_discount,
                    self.columns.wb_price_with_wb_club,
                    self.columns.med_price_without_discount,
+                   self.columns.med_discount,
                    self.columns.med_price_with_discount,
                    self.columns.price_difference,
                    self.columns.equilibrium_discount,]]

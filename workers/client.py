@@ -8,6 +8,7 @@ import requests
 from config import API_KEYS, BASE_URLS, DELAY_INTERVAL, HEADERS, PARAMS
 from logging_config import setup_logging
 from strategies.request_strategies import RequestStrategy
+from utils.request_helper import get_random_user_agent
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -88,6 +89,7 @@ class WildberriesHttpClient(Client):
         self.__strategy = None
 
     def make_request(self, page: str):
+        self.headers['User-Agent'] = get_random_user_agent()
         self.params['page'] = page
         self.headers['Referer'] = ''.join([self.headers['Referer'], page])
         response = requests.get(self.base_url, headers=self.headers, params=self.params)
