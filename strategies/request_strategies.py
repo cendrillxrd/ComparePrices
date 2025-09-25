@@ -138,9 +138,12 @@ class ReqStocksStrategy(RequestStrategy):
     stock_dto = StocksDTO()
 
     def get_info(self, client, nm_ids=None, **kwargs) -> list[dict]:
+        stock_type = kwargs['stock_type']
+
         result = []
         count = 0
         payload = asdict(self.stock_dto)
+        payload['stockType'] = stock_type
         if nm_ids is not None:
             payload['nmIDs'] = nm_ids
 

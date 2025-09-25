@@ -11,7 +11,6 @@ class StocksDTO:
     availabilityFilters: list = field(default=None)
     limit: int = LIMIT_STOCKS
     offset: int = 0
-    stockType: str = ''
     skipDeletedNm: bool = True
 
     def __post_init__(self):

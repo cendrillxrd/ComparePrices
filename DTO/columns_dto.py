@@ -9,6 +9,8 @@ class ColumnsDTO:
     name: str = 'Наименование'
     brand: str = 'Бренд'
     collection: str = 'Коллекция'
+    stock_fbw: str = 'Остаток FBW',
+    stock_fbs: str = 'Остаток FBS',
     wb_price_without_discount: str = '(WB) Цена без скидки\n(зачеркнутая)'
     seller_discount: str = '(WB) Скидка продавца'
     wb_price_with_seller_discount: str = '(WB) Цена со скидкой продавца'
@@ -20,7 +22,4 @@ class ColumnsDTO:
     med_price_with_discount: str = '(MED) Цена со скидкой продавца'
     price_difference: str = 'Разность цен ●'
     equilibrium_discount: str = 'Скидка для равновесия'
-    stock_count: str = 'Остаток',
-    to_client_count: str = 'В пути к клиенту',
-    from_client_count: str = 'В пути от клиента'
     plan_discount: str = 'Скидка для акции'

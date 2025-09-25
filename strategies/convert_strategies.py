@@ -111,15 +111,16 @@ class ConvStocksStrategy(ConverterStrategy):
                                 )
 
         columns_name = [column for column in assigned_df.columns if column in BASE_COLUMNS_NAME]
-        corrected_df = assigned_df[columns_name].copy()
-        corrected_no_zeros_df = corrected_df.loc[~(corrected_df == 0).all(axis=1)]
+
+        # corrected_no_zeros_df = corrected_df.loc[~(corrected_df == 0).all(axis=1)]
 
         columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
 
-        corrected_no_zeros_df.rename(columns_rename,
+        assigned_df.rename(columns_rename,
                                      inplace=True,
                                      axis=1)
-        return corrected_no_zeros_df
+        df_without_unnecessary_columns = assigned_df[[self.columns.seller_article, self.columns.stock_count]].copy()
+        return df_without_unnecessary_columns
 
 class ConvWbCardsPricesStrategy(ConverterStrategy):
     def converting(self, data: dict) -> pd.DataFrame:
