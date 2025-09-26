@@ -34,7 +34,7 @@ class MergePromoStrategy(MergeStrategies):
 
 
 class MergeStocksStrategy(MergeStrategies):
-    def __init__(self, merge_on: str = 'Артикул WB'):
+    def __init__(self, merge_on: str = 'Артикул продавца'):
         self.merge_on = merge_on
 
     def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:

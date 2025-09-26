@@ -33,9 +33,8 @@ BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
                      'subjectName': columns.category,
                      'name': columns.name,
                      'brandName': columns.name,
-                     'stockCount': columns.stock_count,
-                     'toClientCount': columns.to_client_count,
-                     'fromClientCount': columns.to_client_count,
+                     # 'stock_fbw': columns.stock_fbw,
+                     # 'stock_fbs': columns.stock_fbs,
                      'discount': columns.seller_discount,
                      'planDiscount': columns.plan_discount,
                      'id': columns.wb_article,
@@ -50,13 +49,33 @@ LIMIT_PROMO_GOODS = 1000 # <= 1000
 TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
 
-COLUMNS_FOR_EXCEL_FORMATTER = {
-    "discount_wb": columns.wb_discount,
-    "price_diff": columns.price_difference,
-    "med_price": columns.med_price_with_discount,
-    "wb_price": columns.wb_price_with_wb_discount,
-    'seller_discount': columns.seller_discount,
-}
+# COLUMNS_FOR_EXCEL_FORMATTER = ['Артикул WB',
+#                                'Артикул продавца',
+#                                'Категория',
+#                                'Наименование',
+#                                'Бренд',
+#                                'Коллекция',
+#                                'РРЦ',
+#                                '(WB) Скидка продавца',
+#                                '(WB) Цена со скидкой продавца',
+#                                'Скидка WB',
+#                                '(WB) Цена со скидкой WB\n(черная)',
+#                                '(WB) Цена со скидкой WB клуба\n(красная/фиолетовая)',
+#                                '(MED) Цена без скидки',
+#                                '(MED) Скидка продавца',
+#                                '(MED) Цена со скидкой продавца',
+#                                'Разность цен ●',
+#                                'Скидка для равновесия',
+#                                'Скидка для акции',
+#                                'Решение в разрезе остатка',
+#                                'Новая скидка',
+#                                'Закупка',
+#                                'Комиссия МП',
+#                                'МU исходный',
+#                                'MU с учетом нашей скидки',
+#                                'MU с учетом скидки от цены с СПП (идет в ОК и выручку)',
+#                                'MU с учетом комиссии ВБ (от нашей цены)',
+#                                'Макс скидка с учетом комиссии']
 
 DELAY_INTERVAL=10
 

@@ -12,11 +12,11 @@ class ConverterStrategy(ABC):
         self.columns = ColumnsDTO()
 
     @abstractmethod
-    def converting(self, data) -> pd.DataFrame:
+    def converting(self, data, **kwargs) -> pd.DataFrame:
         pass
 
 class ConvPromoGoodsWBStrategy(ConverterStrategy):
-    def converting(self, data: dict) -> pd.DataFrame:
+    def converting(self, data: dict, **kwargs) -> pd.DataFrame:
         """Преобразует данные о ценах на WB в DataFrame"""
         df = pd.DataFrame(data)
 
@@ -36,7 +36,7 @@ class ConvPromoGoodsWBStrategy(ConverterStrategy):
         return min_discount_promotions_df
 
 class ConvPromoIDStrategy(ConverterStrategy):
-    def converting(self, data: dict) -> list:
+    def converting(self, data: dict, **kwargs) -> list:
         promotions = pd.DataFrame(data)
         filtered_promotions = promotions[promotions['type'] == 'regular']
         ids = filtered_promotions['id'].tolist()
@@ -44,7 +44,7 @@ class ConvPromoIDStrategy(ConverterStrategy):
         return int_ids
 
 class ConvPricesWBStrategy(ConverterStrategy):
-    def converting(self, data: dict) -> pd.DataFrame:
+    def converting(self, data: dict, **kwargs) -> pd.DataFrame:
         """Преобразует данные о ценах на WB в DataFrame"""
         df = pd.DataFrame(data)
 
@@ -64,7 +64,7 @@ class ConvPricesWBStrategy(ConverterStrategy):
 
 
 class ConvPricesMEDStrategy(ConverterStrategy):
-    def converting(self, data) -> pd.DataFrame:
+    def converting(self, data, **kwargs) -> pd.DataFrame:
         """Преобразует данные о ценах на меде в DataFrame"""
         med_prices_df = pd.read_csv(StringIO(data.text), encoding='utf-8')
         med_prices_df.drop_duplicates(inplace=True)
@@ -84,7 +84,7 @@ class ConvPricesMEDStrategy(ConverterStrategy):
         return med_unique_prices_df
 
 class ConvCollectionsMEDStrategy(ConverterStrategy):
-    def converting(self, data) -> pd.DataFrame:
+    def converting(self, data, **kwargs) -> pd.DataFrame:
         """Преобразует данные о ценах на меде в DataFrame"""
         med_collections_df = pd.read_excel(BytesIO(data.content))
 
@@ -101,14 +101,20 @@ class ConvCollectionsMEDStrategy(ConverterStrategy):
         return med_without_unnecessary_columns
 
 class ConvStocksStrategy(ConverterStrategy):
-    def converting(self, data: dict) -> pd.DataFrame:
+    def converting(self, data: dict, **kwargs) -> pd.DataFrame:
         """Преобразует данные об остатках в DataFrame"""
+        stock_type = kwargs['stock_type']
         df = pd.DataFrame(data)
 
         assigned_df = df.assign(stockCount=df['metrics'].apply(lambda x: x['stockCount']),
                                 toClientCount=df['metrics'].apply(lambda x: x['toClientCount']),
                                 fromClientCount=df['metrics'].apply(lambda x: x['fromClientCount'])
                                 )
+
+        if stock_type == 'wb':
+            assigned_df.rename({'stockCount': 'stock_fbw',})
+        if stock_type == 'mp':
+            assigned_df.rename({'stockCount': 'stock_fbs',})
 
         columns_name = [column for column in assigned_df.columns if column in BASE_COLUMNS_NAME]
 
@@ -123,7 +129,7 @@ class ConvStocksStrategy(ConverterStrategy):
         return df_without_unnecessary_columns
 
 class ConvWbCardsPricesStrategy(ConverterStrategy):
-    def converting(self, data: dict) -> pd.DataFrame:
+    def converting(self, data: dict, **kwargs) -> pd.DataFrame:
         """Преобразует данные о ценах на WB в DataFrame"""
         prices = []
         prices_df = pd.DataFrame()

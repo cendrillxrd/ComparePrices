@@ -12,7 +12,7 @@ class Converter:
     def set_strategy(self, strategy: ConverterStrategy):
         self.__strategy = strategy
 
-    def convert(self, data) -> Union[pd.DataFrame, list]:
+    def convert(self, data, **kwargs) -> Union[pd.DataFrame, list]:
         if self.__strategy is None:
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
-        return self.__strategy.converting(data)
+        return self.__strategy.converting(data, **kwargs)

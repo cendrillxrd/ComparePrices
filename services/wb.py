@@ -74,7 +74,7 @@ class WBService:
     def get_wb_stocks(self, stock_type=Literal['', 'wb', 'mp']) -> pd.DataFrame:
         logger.info('Получение данных об остатках')
         stocks_json = self.wb_api_client.get_data(stock_type=stock_type)
-        stocks_df = self.converter.convert(stocks_json)
+        stocks_df = self.converter.convert(stocks_json, stock_type=stock_type)
         return stocks_df
 
     @with_strategies(ReqWbCardsPricesStrategy, ConvWbCardsPricesStrategy, 'http')

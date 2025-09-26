@@ -35,7 +35,7 @@ class CorrPromoStrategy(CorrectorStrategy):
 
 class CorrStocksStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
-        df.drop([self.columns.stock_count, self.columns.to_client_count, self.columns.from_client_count], axis=1, inplace=True)
+        df.fillna(0, inplace=True)
         return df
 
 
