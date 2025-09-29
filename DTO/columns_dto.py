@@ -9,8 +9,8 @@ class ColumnsDTO:
     name: str = 'Наименование'
     brand: str = 'Бренд'
     collection: str = 'Коллекция'
-    # stock_fbw: str = 'Остаток FBW',
-    # stock_fbs: str = 'Остаток FBS',
+    stock_fbw: str = 'Остаток FBW'
+    stock_fbs: str = 'Остаток FBS'
     wb_price_without_discount: str = 'РРЦ'
     seller_discount: str = '(WB) Скидка продавца'
     wb_price_with_seller_discount: str = '(WB) Цена со скидкой продавца'

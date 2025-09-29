@@ -1,15 +1,16 @@
 from dataclasses import asdict, dataclass
+from typing import Optional
 
 import pandas as pd
 
 
 @dataclass
 class InfoDTO:
-    wb_prices: pd.DataFrame
-    med_prices: pd.DataFrame
-    wb_cards_prices: pd.DataFrame
-    med_collection_1: pd.DataFrame
-    med_collection_2: pd.DataFrame
-    wb_promotions: pd.DataFrame
-    # wb_fbs_stocks: pd.DataFrame
-    # wb_fbw_stocks: pd.DataFrame
+    wb_prices: Optional[pd.DataFrame] = None
+    med_prices: Optional[pd.DataFrame] = None
+    wb_cards_prices: Optional[pd.DataFrame] = None
+    med_collection_1: Optional[pd.DataFrame] = None
+    med_collection_2: Optional[pd.DataFrame] = None
+    wb_promotions: Optional[pd.DataFrame] = None
+    wb_fbs_stocks: Optional[pd.DataFrame] = None
+    wb_fbw_stocks: Optional[pd.DataFrame] = None

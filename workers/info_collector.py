@@ -21,8 +21,8 @@ class InfoCollector:
         med_collection_1 = self.med.get_med_collections_first()
         med_collection_2 = self.med.get_med_collections_second()
         wb_promotions = self.wb.get_wb_promotions_plan_discounts()
-        # wb_fbs_stocks = self.wb.get_wb_stocks('mp')
-        # wb_fbw_stocks = self.wb.get_wb_stocks('wb')
+        wb_fbs_stocks = self.wb.get_wb_stocks('mp')
+        wb_fbw_stocks = self.wb.get_wb_stocks('wb')
         return InfoDTO(
             wb_cards_prices=wb_cards_prices,
             wb_prices=wb_prices,
@@ -30,6 +30,6 @@ class InfoCollector:
             med_collection_1=med_collection_1,
             med_collection_2=med_collection_2,
             wb_promotions=wb_promotions,
-            # wb_fbs_stocks=wb_fbs_stocks,
-            # wb_fbw_stocks=wb_fbw_stocks
+            wb_fbs_stocks=wb_fbs_stocks,
+            wb_fbw_stocks=wb_fbw_stocks
         )

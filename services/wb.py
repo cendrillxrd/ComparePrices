@@ -1,5 +1,5 @@
 import logging
-from typing import Literal
+from typing import Literal, Union
 
 import pandas as pd
 
@@ -42,10 +42,13 @@ class WBService:
         self.wb_http_client = WildberriesHttpClient()
         self.converter = Converter()
 
-    def get_wb_promotions_plan_discounts(self):
+    def get_wb_promotions_plan_discounts(self) -> Union[pd.DataFrame, None]:
         promo_ids = self.get_wb_promo_ids()
-        promo_goods = self.get_wb_promo_goods(promo_ids)
-        return promo_goods
+        if promo_ids:
+            promo_goods = self.get_wb_promo_goods(promo_ids)
+            return promo_goods
+        else:
+            return None
 
     @with_strategies(ReqWBAPIPromotionsStrategy, ConvPromoIDStrategy, 'api')
     def get_wb_promo_ids(self) -> list:
@@ -71,7 +74,7 @@ class WBService:
         return prices_df
 
     @with_strategies(ReqStocksStrategy, ConvStocksStrategy, 'api')
-    def get_wb_stocks(self, stock_type=Literal['', 'wb', 'mp']) -> pd.DataFrame:
+    def get_wb_stocks(self, stock_type=Literal['wb', 'mp']) -> pd.DataFrame:
         logger.info('Получение данных об остатках')
         stocks_json = self.wb_api_client.get_data(stock_type=stock_type)
         stocks_df = self.converter.convert(stocks_json, stock_type=stock_type)

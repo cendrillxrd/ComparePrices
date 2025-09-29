@@ -157,15 +157,16 @@ class ReqStocksStrategy(RequestStrategy):
 
         while items and antifreeze:
             antifreeze -= 1
-            self.stock_dto.offset += LIMIT_STOCKS
+            payload['offset'] += LIMIT_STOCKS
             result.extend(items)
             time.sleep(TIME_SLEEP_STOCKS)
             count += len(items)
             logger.debug(f'Карточек загружено {count}')
 
-            payload = asdict(self.stock_dto)
-            if nm_ids is not None:
-                payload['nmIDs'] = nm_ids
+            # payload = asdict(self.stock_dto)
+            # payload['stockType'] = stock_type
+            # if nm_ids is not None:
+            #     payload['nmIDs'] = nm_ids
 
             response = client.make_request(method='POST',
                                            api_type=self.api_type,

@@ -112,9 +112,9 @@ class ConvStocksStrategy(ConverterStrategy):
                                 )
 
         if stock_type == 'wb':
-            assigned_df.rename({'stockCount': 'stock_fbw',})
+            assigned_df.rename({'stockCount': 'stock_fbw'}, inplace=True, axis=1)
         if stock_type == 'mp':
-            assigned_df.rename({'stockCount': 'stock_fbs',})
+            assigned_df.rename({'stockCount': 'stock_fbs'}, inplace=True, axis=1)
 
         columns_name = [column for column in assigned_df.columns if column in BASE_COLUMNS_NAME]
 
@@ -125,7 +125,11 @@ class ConvStocksStrategy(ConverterStrategy):
         assigned_df.rename(columns_rename,
                                      inplace=True,
                                      axis=1)
-        df_without_unnecessary_columns = assigned_df[[self.columns.seller_article, self.columns.stock_count]].copy()
+        if stock_type == 'wb':
+            df_without_unnecessary_columns = assigned_df[[self.columns.seller_article, self.columns.stock_fbw]].copy()
+        else:
+            df_without_unnecessary_columns = assigned_df[[self.columns.seller_article, self.columns.stock_fbs]].copy()
+
         return df_without_unnecessary_columns
 
 class ConvWbCardsPricesStrategy(ConverterStrategy):
