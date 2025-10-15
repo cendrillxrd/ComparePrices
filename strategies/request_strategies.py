@@ -4,7 +4,7 @@ import time
 from abc import ABC, abstractmethod
 
 from config import (LIMIT_PRICE, LIMIT_STOCKS, TIME_SLEEP_PRICE,
-                    TIME_SLEEP_STOCKS)
+                    TIME_SLEEP_STOCKS, PURCHASE_PASSWORD, PURCHASE_LOGIN)
 from DTO.price_dto import PriceDTO
 from DTO.promo_dto import PromoDTO
 from DTO.promo_goods import PromoGoodsDTO
@@ -19,6 +19,20 @@ class RequestStrategy(ABC):
     @abstractmethod
     def get_info(self, client: 'Client', **kwargs) -> list[dict]:
         pass
+
+class ReqWBNewPricesStrategy(RequestStrategy):
+    endpoint = '/api/v2/upload/task'
+    api_type = 'Price_discount_API_KEY'
+    url_key = 'discounts-prices'
+
+    def get_info(self, client: 'Client', **kwargs):
+        logger.info(f'Редактирование цен')
+        params = {'data': kwargs.get('data')}
+        response = client.make_request(method='POST',
+                                       api_type=self.api_type,
+                                       url_key=self.url_key,
+                                       params=params,
+                                       endpoint=self.endpoint)
 
 class ReqWBAPIPromotionsStrategy(RequestStrategy):
     endpoint = '/api/v1/calendar/promotions'
@@ -163,11 +177,6 @@ class ReqStocksStrategy(RequestStrategy):
             count += len(items)
             logger.debug(f'Карточек загружено {count}')
 
-            # payload = asdict(self.stock_dto)
-            # payload['stockType'] = stock_type
-            # if nm_ids is not None:
-            #     payload['nmIDs'] = nm_ids
-
             response = client.make_request(method='POST',
                                            api_type=self.api_type,
                                            url_key=self.url_key,
@@ -192,4 +201,12 @@ class ReqCollectionsSecondMEDStrategy(RequestStrategy):
     url_key = "med_collections_2"
     def get_info(self, client: 'Client', **kwargs) -> list[dict]:
         response = client.make_request(url_key=self.url_key)
+        return response
+
+class ReqPurchaseMEDStrategy(RequestStrategy):
+    url_key = "med_purchase"
+    login = PURCHASE_LOGIN
+    password = PURCHASE_PASSWORD
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        response = client.make_request(url_key=self.url_key, login=self.login, password=self.password)
         return response

@@ -7,6 +7,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.worksheet.datavalidation import DataValidation
 
+from config import BASE_MP_COMMISSION
 from logging_config import setup_logging
 from utils.excel_helper import (blue_fill, green_fill, orange_fill, pink_fill,
                                 red_fill, yellow_fill)
@@ -106,29 +107,29 @@ class ExcelFormatter:
                     cell.style = "percentage_integer_style"
 
     def _formula_mu_original(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_without_discount]}{row} / {columns[self.new_columns_dto.purchase]}{row} - 1"
+        formula = f"={columns[self.main_columns_dto.wb_price_without_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
         return formula
 
     def _formula_mu_with_our_discount(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} / {columns[self.new_columns_dto.purchase]}{row} - 1"
+        formula = f"={columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
         return formula
 
     def _formula_mu_with_discount_from_the_price_with_spp(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_with_wb_club]}{row} / {columns[self.new_columns_dto.purchase]}{row} - 1"
+        formula = f"={columns[self.main_columns_dto.wb_price_with_wb_club]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
         return formula
 
     def _formula_mu_taking_into_account_the_wb_commission(self, columns, row):
         formula = (f"=({columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} - {columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} *"
-                   f" {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.new_columns_dto.purchase]}{row} - 1")
+                   f" {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.purchase]}{row} - 1")
         return formula
 
     def _formula_max_discount_including_commission(self, columns, row):
-        formula = f"=1 - {columns[self.new_columns_dto.purchase]}{row} / (1 - {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.wb_price_without_discount]}{row}"
+        formula = f"=1 - {columns[self.main_columns_dto.purchase]}{row} / (1 - {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.wb_price_without_discount]}{row}"
         return formula
 
     def _fill_formulas(self, ws, cols):
         for row in range(2, len(self.df) + 2):
-
+            ws[f"{cols[self.new_columns_dto.mp_commission]}{row}"] = f'{BASE_MP_COMMISSION}%'
             ws[f"{cols[self.new_columns_dto.mu_original]}{row}"] = self._formula_mu_original(cols, row)
             ws[f"{cols[self.new_columns_dto.mu_with_our_discount]}{row}"] = self._formula_mu_with_our_discount(cols,row)
             ws[f"{cols[self.new_columns_dto.mu_with_discount_from_the_price_with_spp]}{row}"] = self._formula_mu_with_discount_from_the_price_with_spp(cols, row)

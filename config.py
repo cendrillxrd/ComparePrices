@@ -13,6 +13,9 @@ API_KEYS = {
     'Analytics_Statistics_API_KEY': os.getenv('ANALYTICS_STATISTICS_API_KEY')
 }
 
+PURCHASE_LOGIN = os.getenv('PURCHASE_LOGIN')
+PURCHASE_PASSWORD = os.getenv('PURCHASE_PASSWORD')
+
 BASE_URLS = {
     'dp-calendar': 'https://dp-calendar-api.wildberries.ru',
     'discounts-prices': 'https://discounts-prices-api.wildberries.ru',
@@ -20,7 +23,8 @@ BASE_URLS = {
     'med_prices': 'https://med-online.ru/upload/acrit.exportproplus/file.prices.csv?1755164681',
     'wb_http': 'https://catalog.wb.ru/sellers/v4/catalog',
     'med_collections_1': 'https://med-online.ru/upload/acrit.exportproplus/file.OZON.xlsx?1740656479',
-    'med_collections_2': 'https://med-online.ru/upload/acrit.exportproplus/file.OZONdop.xlsx?1744707024'
+    'med_collections_2': 'https://med-online.ru/upload/acrit.exportproplus/file.OZONdop.xlsx?1744707024',
+    'med_purchase': 'https://med-online.ru/upload/1cdata/cost.csv'
 }
 
 BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
@@ -38,6 +42,11 @@ BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
                      'discount': columns.seller_discount,
                      'planDiscount': columns.plan_discount,
                      'id': columns.wb_article,
+                     'ID': columns.ozon_id,
+                     'toClientCount': columns.stock_in_way_to_client,
+                     'fromClientCount': columns.stock_in_way_from_client,
+                     'OfferId': columns.ozon_id,
+                     'Cost': columns.purchase
                      }
 
 FILE_PATH = 'C:/Users/Admin/Desktop/'
@@ -49,6 +58,7 @@ LIMIT_PROMO_GOODS = 1000 # <= 1000
 TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
 
+BASE_MP_COMMISSION = 50
 # COLUMNS_FOR_EXCEL_FORMATTER = ['Артикул WB',
 #                                'Артикул продавца',
 #                                'Категория',

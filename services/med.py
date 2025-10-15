@@ -4,10 +4,10 @@ import pandas as pd
 
 from logging_config import setup_logging
 from strategies.convert_strategies import (ConvCollectionsMEDStrategy,
-                                           ConvPricesMEDStrategy)
+                                           ConvPricesMEDStrategy, ConvPurchaseMEDStrategy)
 from strategies.request_strategies import (ReqCollectionsFirstMEDStrategy,
                                            ReqCollectionsSecondMEDStrategy,
-                                           ReqPricesMEDStrategy)
+                                           ReqPricesMEDStrategy, ReqPurchaseMEDStrategy)
 from workers.client import MedClient
 from workers.converter import Converter
 
@@ -52,3 +52,11 @@ class MEDService:
         med_collections_csv = self.med.get_data()
         med_collections_df = self.converter.convert(med_collections_csv)
         return med_collections_df
+
+    @with_strategies(ReqPurchaseMEDStrategy, ConvPurchaseMEDStrategy)
+    def get_med_purchase(self) -> pd.DataFrame:
+        logger.info('Получение данных о коллекциях второй ссылки')
+        med_purchase_csv = self.med.get_data()
+        med_purchase_df = self.converter.convert(med_purchase_csv)
+        return med_purchase_df
+

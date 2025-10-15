@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
+from DTO.columns_dto import ColumnsDTO
+columns_dto = ColumnsDTO()
 
 class MergeStrategies(ABC):
     @abstractmethod
@@ -9,7 +11,7 @@ class MergeStrategies(ABC):
         pass
 
 class MergeCollectionsStrategy(MergeStrategies):
-    def __init__(self, merge_on: str = 'Артикул продавца'):
+    def __init__(self, merge_on: str = columns_dto.seller_article):
         self.merge_on = merge_on
 
     def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -17,7 +19,7 @@ class MergeCollectionsStrategy(MergeStrategies):
         return merged_df
 
 class MergePricesStrategy(MergeStrategies):
-    def __init__(self, merge_on: str = 'Артикул продавца'):
+    def __init__(self, merge_on: str = columns_dto.seller_article):
         self.merge_on = merge_on
 
     def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -25,7 +27,15 @@ class MergePricesStrategy(MergeStrategies):
         return merged_df
 
 class MergePromoStrategy(MergeStrategies):
-    def __init__(self, merge_on: str = 'Артикул WB'):
+    def __init__(self, merge_on: str = columns_dto.wb_article):
+        self.merge_on = merge_on
+
+    def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
+        merged_df = pd.merge(df1, df2, on=self.merge_on, how='left')
+        return merged_df
+
+class MergePurchaseStrategy(MergeStrategies):
+    def __init__(self, merge_on: str = columns_dto.ozon_id):
         self.merge_on = merge_on
 
     def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -34,7 +44,7 @@ class MergePromoStrategy(MergeStrategies):
 
 
 class MergeStocksStrategy(MergeStrategies):
-    def __init__(self, merge_on: str = 'Артикул продавца'):
+    def __init__(self, merge_on: str = columns_dto.seller_article):
         self.merge_on = merge_on
 
     def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -42,7 +52,7 @@ class MergeStocksStrategy(MergeStrategies):
         return merged_df
 
 class MergeWbPricesStrategy(MergeStrategies):
-    def __init__(self, merge_on: str = 'Артикул WB'):
+    def __init__(self, merge_on: str = columns_dto.wb_article):
         self.merge_on = merge_on
 
     def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -50,7 +60,7 @@ class MergeWbPricesStrategy(MergeStrategies):
         return merged_df
 
 class MergeWbCollectionsStrategy(MergeStrategies):
-    def __init__(self, merge_on: str = 'Артикул продавца'):
+    def __init__(self, merge_on: str = columns_dto.seller_article):
         self.merge_on = merge_on
 
     def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -58,3 +68,5 @@ class MergeWbCollectionsStrategy(MergeStrategies):
         df2[self.merge_on] = df2[self.merge_on].astype(str)
         merged_df = pd.merge(df1, df2, on=self.merge_on, how='left')
         return merged_df
+
+

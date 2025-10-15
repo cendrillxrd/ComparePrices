@@ -14,3 +14,4 @@ class InfoDTO:
     wb_promotions: Optional[pd.DataFrame] = None
     wb_fbs_stocks: Optional[pd.DataFrame] = None
     wb_fbw_stocks: Optional[pd.DataFrame] = None
+    purchase: Optional[pd.DataFrame] = None

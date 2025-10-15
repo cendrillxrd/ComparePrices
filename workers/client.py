@@ -52,7 +52,7 @@ class WildberriesAPIClient(Client):
                                             url=url,
                                             params=params,
                                             json=payload,
-                                            timeout=10)
+                                            timeout=30)
             logger.info(f'Запрос выполнен успешно')
             try:
                 response.raise_for_status()
@@ -118,10 +118,11 @@ class MedClient(Client):
         self.base_url = BASE_URLS
         self.__strategy = None
 
-    def make_request(self, url_key: Literal['med_prices', 'med_collections_1', 'med_collections_2']):
+    def make_request(self, url_key: Literal['med_prices', 'med_collections_1', 'med_collections_2', 'med_purchase'], login: str = None,
+                     password: str = None,):
         url = f'{self.base_url[url_key]}'
         logger.info(f'Выполнение запроса по адресу {url}')
-        response = requests.get(url)
+        response = requests.get(url, auth=(login, password))
         return response
 
     def set_strategy(self, strategy: RequestStrategy):

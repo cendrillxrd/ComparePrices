@@ -43,17 +43,11 @@ class CorrWbPricesStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
         df[self.columns.wb_discount] = 100 - round((df[self.columns.wb_price_with_wb_discount] / df[self.columns.wb_price_with_seller_discount]) * 100)
         return df
-        # return df[[self.columns.wb_article,
-        #            self.columns.seller_article,
-        #            self.columns.category,
-        #            self.columns.name,
-        #            self.columns.brand,
-        #            self.columns.wb_price_without_discount,
-        #            self.columns.seller_discount,
-        #            self.columns.wb_price_with_seller_discount,
-        #            self.columns.wb_discount,
-        #            self.columns.wb_price_with_wb_discount,
-        #            self.columns.wb_price_with_wb_club,]]
+
+class CorrPurchaseStrategy(CorrectorStrategy):
+    def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
+        df.drop(columns=[self.columns.ozon_id], axis=1, inplace=True)
+        return df
 
 
 class CorrCollectionsStrategy(CorrectorStrategy):
@@ -64,20 +58,3 @@ class CorrCollectionsStrategy(CorrectorStrategy):
         df.loc[df[self.columns.equilibrium_discount] == 100, self.columns.equilibrium_discount] = -1
         df[self.columns.price_difference] = df[self.columns.med_price_with_discount] - df[self.columns.wb_price_with_wb_discount]
         return df
-        # return df[[self.columns.wb_article,
-        #            self.columns.seller_article,
-        #            self.columns.category,
-        #            self.columns.name,
-        #            self.columns.brand,
-        #            self.columns.collection,
-        #            self.columns.wb_price_without_discount,
-        #            self.columns.seller_discount,
-        #            self.columns.wb_price_with_seller_discount,
-        #            self.columns.wb_discount,
-        #            self.columns.wb_price_with_wb_discount,
-        #            self.columns.wb_price_with_wb_club,
-        #            self.columns.med_price_without_discount,
-        #            self.columns.med_discount,
-        #            self.columns.med_price_with_discount,
-        #            self.columns.price_difference,
-        #            self.columns.equilibrium_discount,]]

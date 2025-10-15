@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass
 class DopColumnsDTO:
     solution: str = 'Решение в разрезе остатка'
     new_discount: str = 'Новая скидка'
-    purchase: str = 'Закупка'
+    # purchase: str = 'Закупка'
     mp_commission: str = 'Комиссия МП'
     mu_original: str = 'МU исходный'
     mu_with_our_discount: str = 'MU с учетом нашей скидки'

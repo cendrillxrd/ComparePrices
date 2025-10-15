@@ -14,7 +14,7 @@ from strategies.merge_strategies import (MergeCollectionsStrategy,
                                          MergePromoStrategy,
                                          MergeStocksStrategy,
                                          MergeWbCollectionsStrategy,
-                                         MergeWbPricesStrategy)
+                                         MergeWbPricesStrategy, MergePurchaseStrategy)
 from workers.corrector import Corrector
 from workers.merger import Merger
 
@@ -22,7 +22,7 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-def with_strategies(merge_strategy_cls: 'CorrectorStrategy',
+def with_strategies(merge_strategy_cls: 'MergeStrategies',
                     correcter_strategy_cls: 'CorrectorStrategy' = None):
     def decorator(method):
         def wrapper(self, *args, **kwargs):
@@ -72,14 +72,21 @@ class RedactionService:
     @with_strategies(MergeWbCollectionsStrategy, CorrCollectionsStrategy)
     def merge_with_med_collections(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
         logger.info('Обработка данных по ценам WB и MED')
-        prices_merged = self.merger.merge(wb_df, med_df)
-        prices_corrected = self.corrector.correct(prices_merged)
-        return prices_corrected
+        collections_merged = self.merger.merge(wb_df, med_df)
+        collections_corrected = self.corrector.correct(collections_merged)
+        return collections_corrected
 
     @with_strategies(MergeCollectionsStrategy)
     def merge_collections(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
         logger.info('Обработка данных по коллекциям')
-        prices_merged = self.merger.merge(wb_df, med_df)
-        return prices_merged
+        collections_merged = self.merger.merge(wb_df, med_df)
+        return collections_merged
+
+    @with_strategies(MergePurchaseStrategy)
+    def merge_with_purchase(self, collections_df: pd.DataFrame, purchase_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка закупки')
+        purchase_merged = self.merger.merge(collections_df, purchase_df)
+        # purchase_corrected = self.corrector.correct(purchase_merged)
+        return purchase_merged
 
 

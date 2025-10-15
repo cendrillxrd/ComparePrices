@@ -97,8 +97,22 @@ class ConvCollectionsMEDStrategy(ConverterStrategy):
 
         med_collections_df.drop_duplicates(subset=self.columns.seller_article, inplace=True)
         med_collections_df.reset_index(inplace=True, drop=True)
-        med_without_unnecessary_columns = med_collections_df[[self.columns.seller_article, self.columns.collection]]
+        med_without_unnecessary_columns = med_collections_df[[self.columns.ozon_id, self.columns.seller_article, self.columns.collection]]
         return med_without_unnecessary_columns
+
+class ConvPurchaseMEDStrategy(ConverterStrategy):
+    def converting(self, data, **kwargs) -> pd.DataFrame:
+        """Преобразует данные о закупке на меде в DataFrame"""
+        med_purchase_df = pd.read_csv(StringIO(data.text))
+
+        columns_name = [column for column in med_purchase_df.columns if column in BASE_COLUMNS_NAME]
+
+        columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
+        med_purchase_df.rename(columns_rename,
+                                  inplace=True,
+                                  axis=1)
+
+        return med_purchase_df
 
 class ConvStocksStrategy(ConverterStrategy):
     def converting(self, data: dict, **kwargs) -> pd.DataFrame:
@@ -118,15 +132,14 @@ class ConvStocksStrategy(ConverterStrategy):
 
         columns_name = [column for column in assigned_df.columns if column in BASE_COLUMNS_NAME]
 
-        # corrected_no_zeros_df = corrected_df.loc[~(corrected_df == 0).all(axis=1)]
-
         columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
 
         assigned_df.rename(columns_rename,
                                      inplace=True,
                                      axis=1)
         if stock_type == 'wb':
-            df_without_unnecessary_columns = assigned_df[[self.columns.seller_article, self.columns.stock_fbw]].copy()
+            df_without_unnecessary_columns = assigned_df[[self.columns.seller_article, self.columns.stock_fbw,
+                                                          self.columns.stock_in_way_to_client,self.columns.stock_in_way_from_client]].copy()
         else:
             df_without_unnecessary_columns = assigned_df[[self.columns.seller_article, self.columns.stock_fbs]].copy()
 
