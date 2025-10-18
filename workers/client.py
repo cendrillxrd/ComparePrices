@@ -1,7 +1,8 @@
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, Literal, Optional
+from typing import Dict, Literal, Optional, Union
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 import requests
 
@@ -75,7 +76,7 @@ class WildberriesAPIClient(Client):
 
         return None
 
-    def get_data(self, **kwargs) -> list[dict]:
+    def get_data(self, **kwargs) -> Union[list[dict], int]:
         if self.__strategy is None:
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
         return self.__strategy.get_info(self, **kwargs)
@@ -92,7 +93,7 @@ class WildberriesHttpClient(Client):
         self.headers['User-Agent'] = get_random_user_agent()
         self.params['page'] = page
         self.headers['Referer'] = ''.join([self.headers['Referer'], page])
-        response = requests.get(self.base_url, headers=self.headers, params=self.params)
+        response = requests.get(self.base_url, headers=self.headers, params=self.params, timeout=30)
         content = None
         if response.status_code == 429:
             print('Rate limit reached. Sleeping...')

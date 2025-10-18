@@ -8,12 +8,12 @@ from strategies.convert_strategies import (ConvPricesWBStrategy,
                                            ConvPromoGoodsWBStrategy,
                                            ConvPromoIDStrategy,
                                            ConvStocksStrategy,
-                                           ConvWbCardsPricesStrategy, ConvExcelStrategy)
+                                           ConvWbCardsPricesStrategy, ConvExcelStrategy, ConvStatusNewPricesStrategy)
 from strategies.request_strategies import (ReqStocksStrategy,
                                            ReqWBAPIPricesStrategy,
                                            ReqWBAPIPromotionsGoodsStrategy,
                                            ReqWBAPIPromotionsStrategy,
-                                           ReqWbCardsPricesStrategy, ReqWBNewPricesStrategy)
+                                           ReqWbCardsPricesStrategy, ReqWBNewPricesStrategy, ReqStatusNewPricesStrategy)
 from workers.client import WildberriesAPIClient, WildberriesHttpClient
 from workers.converter import Converter
 
@@ -52,12 +52,21 @@ class WBService:
         else:
             return None
 
-
+    def create_task_for_change_prices(self, data: list[dict]):
+        task_id = self.update_prices(data)
+        status_data_df = self.check_status_tasks(task_id)
+        status_data_df.to_csv('Tasks_status.csv', index=False)
 
     @with_strategies(wb_strategy_cls=ReqWBNewPricesStrategy, type='api')
-    def update_prices(self, data: list[dict]):
+    def update_prices(self, data: list[dict]) -> int:
         task_id = self.wb_api_client.get_data(data=data)
         return task_id
+
+    @with_strategies(wb_strategy_cls=ReqStatusNewPricesStrategy,converter_strategy_cls=ConvStatusNewPricesStrategy, type='api')
+    def check_status_tasks(self, upload_id: int):
+        status_data = self.wb_api_client.get_data(uploadID=upload_id)
+        status_data_df = self.converter.convert(status_data)
+        return status_data_df
 
     @with_strategies(ReqWBAPIPromotionsStrategy, ConvPromoIDStrategy, 'api')
     def get_wb_promo_ids(self) -> list:

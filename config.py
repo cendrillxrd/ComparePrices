@@ -46,7 +46,15 @@ BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
                      'toClientCount': columns.stock_in_way_to_client,
                      'fromClientCount': columns.stock_in_way_from_client,
                      'OfferId': columns.ozon_id,
-                     'Cost': columns.purchase
+                     'Cost': columns.purchase,
+                     'status': 'Статус загрузки',
+                     'uploadID': 'ID загрузки',
+                     'uploadDate': 'Дата',
+                     'overAllGoodsNumber': 'Всего товаров',
+                     'successGoodsNumber': 'Товаров без ошибок',
+                     'techSizeName': 'Размер',
+                     'clubDiscount': 'Скидка WB клуба',
+                     'errorText': 'Текст ошибки'
                      }
 
 FILE_PATH = 'C:/Users/Admin/Desktop/'
@@ -54,13 +62,15 @@ FILE_PATH = 'C:/Users/Admin/Desktop/'
 LIMIT_PRICE = 1000  # <= 1000
 LIMIT_STOCKS = 1000  # <= 1000
 LIMIT_PROMO_GOODS = 1000 # <= 1000
+LIMIT_NEW_PRICE_TASK = 1000 # <= 1000
 
 TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
+TIME_SLEEP_NEW_PRICE_TASK = 1 # >= 0.6
 
 BASE_MP_COMMISSION = 0.5
 
-DELAY_INTERVAL=10
+DELAY_INTERVAL=20
 
 HEADERS = {
      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",

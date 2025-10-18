@@ -125,6 +125,12 @@ class ConvExcelStrategy(ConverterStrategy):
 class ConvStatusNewPricesStrategy(ConverterStrategy):
     def converting(self, data, **kwargs) -> pd.DataFrame:
         df = pd.DataFrame(data)
+        columns_name = [column for column in df.columns if column in BASE_COLUMNS_NAME]
+
+        columns_rename = {k: BASE_COLUMNS_NAME.get(k) for k in columns_name}
+        df.rename(columns_rename,
+                   inplace=True,
+                   axis=1)
         return df
 
 class ConvStocksStrategy(ConverterStrategy):

@@ -4,7 +4,7 @@ import time
 from abc import ABC, abstractmethod
 
 from config import (LIMIT_PRICE, LIMIT_STOCKS, TIME_SLEEP_PRICE,
-                    TIME_SLEEP_STOCKS, PURCHASE_PASSWORD, PURCHASE_LOGIN)
+                    TIME_SLEEP_STOCKS, PURCHASE_PASSWORD, PURCHASE_LOGIN, LIMIT_NEW_PRICE_TASK)
 from DTO.price_dto import PriceDTO
 from DTO.promo_dto import PromoDTO
 from DTO.promo_goods import PromoGoodsDTO
@@ -36,19 +36,39 @@ class ReqWBNewPricesStrategy(RequestStrategy):
         return response['data']['id']
 
 class ReqStatusNewPricesStrategy(RequestStrategy):
-    endpoint = '/api/v2/history/tasks'
+    endpoint = '/api/v2/history/goods/task'
     api_type = 'Price_discount_API_KEY'
     url_key = 'discounts-prices'
 
     def get_info(self, client: 'Client', **kwargs):
         logger.info(f'Запрос статусов цен')
-        params = {'uploadID': kwargs.get('uploadID')}
+        result = []
+        count = 0
+        params = {'uploadID': kwargs.get('uploadID'),
+                  'limit': LIMIT_NEW_PRICE_TASK,
+                  'offset': 0,}
         response = client.make_request(method='GET',
                             api_type=self.api_type,
                             url_key=self.url_key,
                             params=params,
                             endpoint=self.endpoint)
-        return response['data']
+        goods = response['data']['historyGoods']
+        antifreeze = 10
+        while goods and antifreeze:
+            antifreeze -= 1
+            params['offset'] += LIMIT_NEW_PRICE_TASK
+            result.extend(goods)
+            time.sleep(TIME_SLEEP_PRICE)
+            count += len(goods)
+            logger.debug(f'Карточек загружено {count}')
+
+            response = client.make_request(method='GET',
+                                           api_type=self.api_type,
+                                           url_key=self.url_key,
+                                           params=params,
+                                           endpoint=self.endpoint)
+            goods = response['data']['historyGoods']
+        return result
 
 class ReqWBAPIPromotionsStrategy(RequestStrategy):
     endpoint = '/api/v1/calendar/promotions'

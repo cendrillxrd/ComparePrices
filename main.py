@@ -15,21 +15,21 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    logger.info(f'Запуск программы')
-    info_collector = InfoCollector()
-    info = info_collector.collect_info()
+    # logger.info(f'Запуск программы')
+    # info_collector = InfoCollector()
+    # info = info_collector.collect_info()
+    #
+    # info_redactor = InfoRedactor()
+    # info_redacted = info_redactor.redact_info(info)
+    #
+    # excel_formatter = ExcelFormatter(info_redacted)
+    # excel_formatter.get_excel_for_comparison()
 
-    info_redactor = InfoRedactor()
-    info_redacted = info_redactor.redact_info(info)
-
-    excel_formatter = ExcelFormatter(info_redacted)
-    excel_formatter.get_excel_for_comparison()
-
-    excel_df = load_excel_with_formulas(f'{EXCEL_FILE_NAME}.xlsx')
     PRICE_UPDATE = False
     if PRICE_UPDATE:
-        price_updater = PriceUpdater(excel_df)
-        price_updater.update_prices()
+        excel_df = load_excel_with_formulas(f'{EXCEL_FILE_NAME}.xlsx')
+        price_updater = PriceUpdater()
+        price_updater.update_prices(excel_df)
 
 
     # new_df = info_redacted[[

@@ -21,4 +21,4 @@ class PriceUpdater:
         rules_applies_excel_df = self.price_corr.set_rule_old_collections(actual_excel_df)
 
         final_df = self.red.correct_excel_df(rules_applies_excel_df)
-        self.wb.update_prices(final_df)
+        self.wb.create_task_for_change_prices(final_df)
