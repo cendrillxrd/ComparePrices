@@ -1,3 +1,5 @@
+from typing import Union
+
 import pandas as pd
 
 from strategies.correct_strategies import CorrectorStrategy
@@ -10,7 +12,7 @@ class Corrector:
     def set_strategy(self, strategy: CorrectorStrategy):
         self.__strategy = strategy
 
-    def correct(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
+    def correct(self, df: pd.DataFrame, **kwargs) -> Union[pd.DataFrame, list]:
         if self.__strategy is None:
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
         return self.__strategy.correcting(df, **kwargs)

@@ -2,10 +2,13 @@ import logging
 
 import pandas as pd
 
+from config import EXCEL_FILE_NAME
 from logging_config import setup_logging
+from utils.excel_helper import load_excel_with_formulas
 from workers.excel_formater import ExcelFormatter
 from workers.info_collector import InfoCollector
 from workers.info_redactor import InfoRedactor
+from workers.price_updater import PriceUpdater
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -22,6 +25,13 @@ def main():
     excel_formatter = ExcelFormatter(info_redacted)
     excel_formatter.get_excel_for_comparison()
 
+    excel_df = load_excel_with_formulas(f'{EXCEL_FILE_NAME}.xlsx')
+    PRICE_UPDATE = False
+    if PRICE_UPDATE:
+        price_updater = PriceUpdater(excel_df)
+        price_updater.update_prices()
+
+
     # new_df = info_redacted[[
     #              'Артикул WB',
     #              '(WB) Скидка продавца',
@@ -36,7 +46,7 @@ def main():
     #              ]].copy()
     # new_df.to_csv('train_data.csv', mode='a', index=False, header=False, encoding='utf-8')
 
-    # df_excel = pd.read_excel('compare_price.xlsx')
+    # df_excel = pd.read_excel(f'{EXCEL_FILE_NAME}.xlsx')
     # new_df_excel = df_excel[['Артикул WB',
     #                          '(WB) Скидка продавца',
     #                          'Скидка WB',

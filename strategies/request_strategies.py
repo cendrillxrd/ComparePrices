@@ -27,12 +27,28 @@ class ReqWBNewPricesStrategy(RequestStrategy):
 
     def get_info(self, client: 'Client', **kwargs):
         logger.info(f'Редактирование цен')
-        params = {'data': kwargs.get('data')}
+        payload = {'data': kwargs.get('data')}
         response = client.make_request(method='POST',
-                                       api_type=self.api_type,
-                                       url_key=self.url_key,
-                                       params=params,
-                                       endpoint=self.endpoint)
+                            api_type=self.api_type,
+                            url_key=self.url_key,
+                            payload=payload,
+                            endpoint=self.endpoint)
+        return response['data']['id']
+
+class ReqStatusNewPricesStrategy(RequestStrategy):
+    endpoint = '/api/v2/history/tasks'
+    api_type = 'Price_discount_API_KEY'
+    url_key = 'discounts-prices'
+
+    def get_info(self, client: 'Client', **kwargs):
+        logger.info(f'Запрос статусов цен')
+        params = {'uploadID': kwargs.get('uploadID')}
+        response = client.make_request(method='GET',
+                            api_type=self.api_type,
+                            url_key=self.url_key,
+                            params=params,
+                            endpoint=self.endpoint)
+        return response['data']
 
 class ReqWBAPIPromotionsStrategy(RequestStrategy):
     endpoint = '/api/v1/calendar/promotions'

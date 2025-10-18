@@ -3,6 +3,7 @@ from io import BytesIO, StringIO
 
 import pandas as pd
 
+from DTO.dop_columns import DopColumnsDTO
 from config import BASE_COLUMNS_NAME, CLUB_PROCENT
 from DTO.columns_dto import ColumnsDTO
 
@@ -10,6 +11,7 @@ from DTO.columns_dto import ColumnsDTO
 class ConverterStrategy(ABC):
     def __init__(self):
         self.columns = ColumnsDTO()
+        self.dop_columns = DopColumnsDTO()
 
     @abstractmethod
     def converting(self, data, **kwargs) -> pd.DataFrame:
@@ -113,6 +115,17 @@ class ConvPurchaseMEDStrategy(ConverterStrategy):
                                   axis=1)
 
         return med_purchase_df
+
+class ConvExcelStrategy(ConverterStrategy):
+    def converting(self, data, **kwargs) -> pd.DataFrame:
+        df = data[~(data[self.columns.seller_discount] == data[self.columns.equilibrium_discount])]
+        df.loc[df[self.dop_columns.max_discount_including_commission] == 100, self.dop_columns.max_discount_including_commission] = 60
+        return df
+
+class ConvStatusNewPricesStrategy(ConverterStrategy):
+    def converting(self, data, **kwargs) -> pd.DataFrame:
+        df = pd.DataFrame(data)
+        return df
 
 class ConvStocksStrategy(ConverterStrategy):
     def converting(self, data: dict, **kwargs) -> pd.DataFrame:

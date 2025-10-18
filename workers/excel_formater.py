@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from config import BASE_MP_COMMISSION
+from config import BASE_MP_COMMISSION, EXCEL_FILE_NAME
 from logging_config import setup_logging
 from utils.excel_helper import (blue_fill, green_fill, orange_fill, pink_fill,
                                 red_fill, yellow_fill)
@@ -42,7 +42,7 @@ class ExcelFormatter:
         self._apply_percentage_format(ws, col_letters)
         self._apply_conditional_formatting(ws, col_letters)
         self._auto_fit_columns(ws)
-        self.work_book.save("compare_price.xlsx")
+        self.work_book.save(f"{EXCEL_FILE_NAME}.xlsx")
 
     def _add_new_columns_to_dataframe(self):
         """Добавляет новые колонки в датафрейм"""
@@ -129,7 +129,7 @@ class ExcelFormatter:
 
     def _fill_formulas(self, ws, cols):
         for row in range(2, len(self.df) + 2):
-            ws[f"{cols[self.new_columns_dto.mp_commission]}{row}"] = f'{BASE_MP_COMMISSION}%'
+            ws[f"{cols[self.new_columns_dto.mp_commission]}{row}"] = BASE_MP_COMMISSION
             ws[f"{cols[self.new_columns_dto.mu_original]}{row}"] = self._formula_mu_original(cols, row)
             ws[f"{cols[self.new_columns_dto.mu_with_our_discount]}{row}"] = self._formula_mu_with_our_discount(cols,row)
             ws[f"{cols[self.new_columns_dto.mu_with_discount_from_the_price_with_spp]}{row}"] = self._formula_mu_with_discount_from_the_price_with_spp(cols, row)

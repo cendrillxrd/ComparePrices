@@ -8,7 +8,7 @@ from strategies.correct_strategies import (CorrCollectionsStrategy,
                                            CorrPricesStrategy,
                                            CorrPromoStrategy,
                                            CorrStocksStrategy,
-                                           CorrWbPricesStrategy)
+                                           CorrWbPricesStrategy, CorrPurchaseStrategy, CorrExcelStrategy)
 from strategies.merge_strategies import (MergeCollectionsStrategy,
                                          MergePricesStrategy,
                                          MergePromoStrategy,
@@ -22,11 +22,12 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-def with_strategies(merge_strategy_cls: 'MergeStrategies',
+def with_strategies(merge_strategy_cls: 'MergeStrategies' = None,
                     correcter_strategy_cls: 'CorrectorStrategy' = None):
     def decorator(method):
         def wrapper(self, *args, **kwargs):
-            self.merger.set_strategy(merge_strategy_cls())
+            if merge_strategy_cls is not None:
+                self.merger.set_strategy(merge_strategy_cls())
             if correcter_strategy_cls is not None:
                 self.corrector.set_strategy(correcter_strategy_cls())
             return method(self, *args, **kwargs)
@@ -40,6 +41,11 @@ class RedactionService:
     def __init__(self):
         self.merger = Merger()
         self.corrector = Corrector()
+
+    @with_strategies(correcter_strategy_cls=CorrExcelStrategy)
+    def correct_excel_df(self, excel_df: pd.DataFrame) -> list[dict]:
+        excel_df_corrected = self.corrector.correct(excel_df)
+        return excel_df_corrected
 
     @with_strategies(MergePromoStrategy, CorrPromoStrategy)
     def merge_with_promotions(self, wb_df: pd.DataFrame, promo_df: pd.DataFrame) -> pd.DataFrame:
@@ -82,7 +88,7 @@ class RedactionService:
         collections_merged = self.merger.merge(wb_df, med_df)
         return collections_merged
 
-    @with_strategies(MergePurchaseStrategy)
+    @with_strategies(merge_strategy_cls=MergePurchaseStrategy)
     def merge_with_purchase(self, collections_df: pd.DataFrame, purchase_df: pd.DataFrame) -> pd.DataFrame:
         logger.info('Обработка закупки')
         purchase_merged = self.merger.merge(collections_df, purchase_df)

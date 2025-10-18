@@ -8,12 +8,12 @@ from strategies.convert_strategies import (ConvPricesWBStrategy,
                                            ConvPromoGoodsWBStrategy,
                                            ConvPromoIDStrategy,
                                            ConvStocksStrategy,
-                                           ConvWbCardsPricesStrategy)
+                                           ConvWbCardsPricesStrategy, ConvExcelStrategy)
 from strategies.request_strategies import (ReqStocksStrategy,
                                            ReqWBAPIPricesStrategy,
                                            ReqWBAPIPromotionsGoodsStrategy,
                                            ReqWBAPIPromotionsStrategy,
-                                           ReqWbCardsPricesStrategy)
+                                           ReqWbCardsPricesStrategy, ReqWBNewPricesStrategy)
 from workers.client import WildberriesAPIClient, WildberriesHttpClient
 from workers.converter import Converter
 
@@ -21,14 +21,16 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-def with_strategies(wb_strategy_cls, converter_strategy_cls, type: Literal['api', 'http']):
+def with_strategies(wb_strategy_cls = None, converter_strategy_cls = None, type: Literal['api', 'http', ''] = None):
     def decorator(method):
         def wrapper(self, *args, **kwargs):
-            if type == 'api':
-                self.wb_api_client.set_strategy(wb_strategy_cls())
-            else:
-                self.wb_http_client.set_strategy(wb_strategy_cls())
-            self.converter.set_strategy(converter_strategy_cls())
+            if wb_strategy_cls is not None:
+                if type == 'api':
+                    self.wb_api_client.set_strategy(wb_strategy_cls())
+                else:
+                    self.wb_http_client.set_strategy(wb_strategy_cls())
+            if converter_strategy_cls is not None:
+                self.converter.set_strategy(converter_strategy_cls())
             return method(self, *args, **kwargs)
 
         return wrapper
@@ -49,6 +51,13 @@ class WBService:
             return promo_goods
         else:
             return None
+
+
+
+    @with_strategies(wb_strategy_cls=ReqWBNewPricesStrategy, type='api')
+    def update_prices(self, data: list[dict]):
+        task_id = self.wb_api_client.get_data(data=data)
+        return task_id
 
     @with_strategies(ReqWBAPIPromotionsStrategy, ConvPromoIDStrategy, 'api')
     def get_wb_promo_ids(self) -> list:
