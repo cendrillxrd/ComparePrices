@@ -3,6 +3,7 @@ from typing import Literal, Union
 
 import pandas as pd
 
+from config import TASKS_STATUS
 from logging_config import setup_logging
 from strategies.convert_strategies import (ConvPricesWBStrategy,
                                            ConvPromoGoodsWBStrategy,
@@ -55,7 +56,7 @@ class WBService:
     def create_task_for_change_prices(self, data: list[dict]):
         task_id = self.update_prices(data)
         status_data_df = self.check_status_tasks(task_id)
-        status_data_df.to_csv('Tasks_status.csv', index=False)
+        status_data_df.to_csv(f'{TASKS_STATUS}.csv', index=False)
 
     @with_strategies(wb_strategy_cls=ReqWBNewPricesStrategy, type='api')
     def update_prices(self, data: list[dict]) -> int:

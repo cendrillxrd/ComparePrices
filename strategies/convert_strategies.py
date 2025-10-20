@@ -5,7 +5,7 @@ import pandas as pd
 
 from DTO.dop_columns import DopColumnsDTO
 from config import BASE_COLUMNS_NAME, CLUB_PROCENT
-from DTO.columns_dto import ColumnsDTO
+from DTO.columns_dto import ColumnsDTO, asdict
 
 
 class ConverterStrategy(ABC):
@@ -131,7 +131,10 @@ class ConvStatusNewPricesStrategy(ConverterStrategy):
         df.rename(columns_rename,
                    inplace=True,
                    axis=1)
-        return df
+        needs_columns = [self.columns.wb_article, self.columns.seller_article,
+                         self.columns.wb_price_without_discount, self.columns.seller_discount, 'Статус загрузки',
+                         'Текст ошибки']
+        return df[[col for col in needs_columns if col in df.columns]]
 
 class ConvStocksStrategy(ConverterStrategy):
     def converting(self, data: dict, **kwargs) -> pd.DataFrame:

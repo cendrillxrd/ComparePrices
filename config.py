@@ -58,6 +58,7 @@ BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
                      }
 
 FILE_PATH = 'C:/Users/Admin/Desktop/'
+TASKS_STATUS = 'Tasks_status'
 
 LIMIT_PRICE = 1000  # <= 1000
 LIMIT_STOCKS = 1000  # <= 1000
@@ -70,7 +71,7 @@ TIME_SLEEP_NEW_PRICE_TASK = 1 # >= 0.6
 
 BASE_MP_COMMISSION = 0.5
 
-DELAY_INTERVAL=20
+DELAY_INTERVAL=10
 
 HEADERS = {
      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
