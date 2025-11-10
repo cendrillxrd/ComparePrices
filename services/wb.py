@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Literal, Union
 
 import pandas as pd
@@ -55,6 +56,7 @@ class WBService:
 
     def create_task_for_change_prices(self, data: list[dict]):
         task_id = self.update_prices(data)
+        time.sleep(30)
         status_data_df = self.check_status_tasks(task_id)
         status_data_df.to_csv(f'{TASKS_STATUS}.csv', index=False)
 
@@ -93,9 +95,11 @@ class WBService:
         return prices_df
 
     @with_strategies(ReqStocksStrategy, ConvStocksStrategy, 'api')
-    def get_wb_stocks(self, stock_type=Literal['wb', 'mp']) -> pd.DataFrame:
+    def get_wb_stocks(self, stock_type=Literal['wb', 'mp']) -> Union[pd.DataFrame, None]:
         logger.info('Получение данных об остатках')
         stocks_json = self.wb_api_client.get_data(stock_type=stock_type)
+        if stocks_json is None:
+            return stocks_json
         stocks_df = self.converter.convert(stocks_json, stock_type=stock_type)
         return stocks_df
 

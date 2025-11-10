@@ -15,14 +15,16 @@ class InfoCollector:
         self.med = MEDService()
 
     def collect_info(self) -> InfoDTO:
+        wb_fbs_stocks = self.wb.get_wb_stocks('mp')
+        wb_fbw_stocks = self.wb.get_wb_stocks('wb')
         wb_prices = self.wb.get_wb_prices()
         wb_cards_prices = self.wb.get_wb_cards_prices()
         med_prices = self.med.get_med_prices()
         med_collection_1 = self.med.get_med_collections_first()
         med_collection_2 = self.med.get_med_collections_second()
         wb_promotions = self.wb.get_wb_promotions_plan_discounts()
-        wb_fbs_stocks = self.wb.get_wb_stocks('mp')
-        wb_fbw_stocks = self.wb.get_wb_stocks('wb')
+        # wb_fbs_stocks = self.wb.get_wb_stocks('mp')
+        # wb_fbw_stocks = self.wb.get_wb_stocks('wb')
         purchase = self.med.get_med_purchase()
 
         return InfoDTO(

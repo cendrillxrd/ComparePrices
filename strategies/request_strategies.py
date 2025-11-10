@@ -2,6 +2,7 @@ import logging
 import random
 import time
 from abc import ABC, abstractmethod
+from typing import Union
 
 from config import (LIMIT_PRICE, LIMIT_STOCKS, TIME_SLEEP_PRICE,
                     TIME_SLEEP_STOCKS, PURCHASE_PASSWORD, PURCHASE_LOGIN, LIMIT_NEW_PRICE_TASK)
@@ -10,6 +11,7 @@ from DTO.promo_dto import PromoDTO
 from DTO.promo_goods import PromoGoodsDTO
 from DTO.stocks_dto import StocksDTO, asdict
 from logging_config import setup_logging
+# from utils.request_helper import get_wildberries_cookies
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -162,7 +164,7 @@ class ReqWBAPIPricesStrategy(RequestStrategy):
 
 class ReqWbCardsPricesStrategy(RequestStrategy):
     @staticmethod
-    def get_product_list(client: 'Client', page: str):
+    def get_product_list(client: 'Client', page: str) -> list[dict]:
         logger.debug(f'Страница {page}')
         content = client.make_request(page)
         product_list = content['products']
@@ -187,7 +189,7 @@ class ReqStocksStrategy(RequestStrategy):
     url_key = "seller-analytics"
     stock_dto = StocksDTO()
 
-    def get_info(self, client, nm_ids=None, **kwargs) -> list[dict]:
+    def get_info(self, client, nm_ids=None, **kwargs) -> Union[list[dict], None]:
         stock_type = kwargs['stock_type']
 
         result = []
@@ -202,6 +204,8 @@ class ReqStocksStrategy(RequestStrategy):
                                        url_key=self.url_key,
                                        payload=payload,
                                        endpoint=self.endpoint)
+        if response is None:
+            return response
         items = response['data']['items']
         antifreeze = 1000
 
@@ -218,6 +222,8 @@ class ReqStocksStrategy(RequestStrategy):
                                            url_key=self.url_key,
                                            payload=payload,
                                            endpoint=self.endpoint)
+            if response == None:
+                return response
             items = response['data']['items']
         return result
 

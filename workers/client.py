@@ -1,18 +1,23 @@
+import json
 import logging
 import time
 from abc import ABC, abstractmethod
 from typing import Dict, Literal, Optional, Union
-from tenacity import retry, stop_after_attempt, wait_fixed
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 
 import requests
 
-from config import API_KEYS, BASE_URLS, DELAY_INTERVAL, HEADERS, PARAMS
+from config import API_KEYS, BASE_URLS, DELAY_INTERVAL, HEADERS, PARAMS, RETRY_TIMES
 from logging_config import setup_logging
 from strategies.request_strategies import RequestStrategy
-from utils.request_helper import get_random_user_agent
 
 setup_logging()
 logger = logging.getLogger(__name__)
+logging.getLogger('selenium').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
 logging.getLogger("urllib3").propagate = False
 
 
@@ -43,7 +48,7 @@ class WildberriesAPIClient(Client):
                      endpoint: str,
                      params: Optional[Dict] = None,
                      payload: Optional[Dict] = None,
-                     retries: int = 5):
+                     retries: int = RETRY_TIMES):
         url = f'{self.base_url[url_key]}{endpoint}'
         logger.info(f'Выполнение запроса по адресу {url}')
 
@@ -65,6 +70,8 @@ class WildberriesAPIClient(Client):
                     wait_time = min(2 ** attempt, 10)
                     logger.debug(f"Retrying in {wait_time} seconds...")
                     time.sleep(wait_time)
+                    if attempt == RETRY_TIMES:
+                        return None
                     continue
                 raise
 
@@ -84,27 +91,23 @@ class WildberriesAPIClient(Client):
 
 class WildberriesHttpClient(Client):
     def __init__(self):
-        self.base_url = BASE_URLS['wb_http']
-        self.headers = HEADERS
-        self.params = PARAMS
+        # self.base_url = BASE_URLS['wb_http']
+        # self.headers = HEADERS
+        # self.params = PARAMS
         self.__strategy = None
 
-    def make_request(self, page: str):
-        self.headers['User-Agent'] = get_random_user_agent()
-        self.params['page'] = page
-        self.headers['Referer'] = ''.join([self.headers['Referer'], page])
-        response = requests.get(self.base_url, headers=self.headers, params=self.params, timeout=30)
-        content = None
-        if response.status_code == 429:
-            print('Rate limit reached. Sleeping...')
-            time.sleep(DELAY_INTERVAL)
-            return self.make_request(page)
-        elif response.status_code != 200:
-            print(f'Error: {response.status_code}. Try a different proxy or user-agent')
-            response.raise_for_status()
-        else:
-            content = response.json()
-        return content
+    def make_request(self, page: str, **kwargs):
+        options = Options()
+        options.add_argument('--headless=new')
+
+        driver = webdriver.Chrome(options=options)
+        url = f'https://www.wildberries.ru/__internal/u-catalog/sellers/v4/catalog?ab_testing=false&ab_testing=false&appType=1&curr=rub&dest=12358062&hide_dtype=11&inheritFilters=false&lang=ru&page={page}&sort=popular&spp=30&supplier=859504'
+        driver.get(url)
+        time.sleep(2)
+        full_text = driver.find_element(By.TAG_NAME, "body").text
+        data = json.loads(full_text)
+        driver.quit()
+        return data
 
     def set_strategy(self, strategy: RequestStrategy):
         self.__strategy = strategy

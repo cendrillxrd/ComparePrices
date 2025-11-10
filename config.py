@@ -75,13 +75,11 @@ DELAY_INTERVAL=10
 
 HEADERS = {
      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
-     "Access-Control-Allow-Credentials": "true",
-     "Access-Control-Allow-Headers":"Authorization, x-pow, x-captcha-id, x-userdata",
-     "Access-Control-Allow-Methods":"HEAD,GET,OPTIONS",
      "Referer": "https://www.wildberries.ru/seller/859504?sort=popular&page=",
-     "Access-control-Allow-Origin":"https://www.wildberries.ru",
-     "Content-Encoding":"gzip",
-     "Content-Type":"application/json"
+     "Content-Encoding":"gzip, deflate, br, zstd",
+     "Content-Type":"application/json",
+     "sec-ch-ua":'"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"',
+
 }
 
 USER_AGENTS = [
@@ -124,3 +122,5 @@ PARAMS = {
 CLUB_PROCENT = 2
 
 EXCEL_FILE_NAME = 'compare_price'
+
+RETRY_TIMES = 5

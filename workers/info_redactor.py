@@ -17,12 +17,14 @@ class InfoRedactor:
         operations = [
             (self.red.merge_with_med_prices, info.med_prices),
             (self.red.merge_with_med_collections, purchase_merged),
-            (self.red.merge_stocks, info.wb_fbw_stocks),
-            (self.red.merge_stocks, info.wb_fbs_stocks),
         ]
 
         if info.wb_promotions is not None:
             operations.append((self.red.merge_with_promotions, info.wb_promotions))
+        if info.wb_fbs_stocks is not None:
+            operations.append((self.red.merge_stocks, info.wb_fbs_stocks))
+        if info.wb_fbw_stocks is not None:
+            operations.append((self.red.merge_stocks, info.wb_fbw_stocks))
 
         result = wb_prices_merged
 
