@@ -1,4 +1,5 @@
 import logging
+from typing import Literal
 
 import pandas as pd
 
@@ -40,17 +41,17 @@ class MEDService:
         return med_prices_df
 
     @with_strategies(ReqCollectionsFirstMEDStrategy, ConvCollectionsMEDStrategy)
-    def get_med_collections_first(self) -> pd.DataFrame:
+    def get_med_collections_first(self, type: str = Literal['ozon', 'wb']) -> pd.DataFrame:
         logger.info('Получение данных о коллекциях первой ссылки')
         med_collections_csv = self.med.get_data()
-        med_collections_df = self.converter.convert(med_collections_csv)
+        med_collections_df = self.converter.convert(med_collections_csv, type=type)
         return med_collections_df
 
     @with_strategies(ReqCollectionsSecondMEDStrategy, ConvCollectionsMEDStrategy)
-    def get_med_collections_second(self) -> pd.DataFrame:
+    def get_med_collections_second(self, type: str = Literal['ozon', 'wb']) -> pd.DataFrame:
         logger.info('Получение данных о коллекциях второй ссылки')
         med_collections_csv = self.med.get_data()
-        med_collections_df = self.converter.convert(med_collections_csv)
+        med_collections_df = self.converter.convert(med_collections_csv, type=type)
         return med_collections_df
 
     @with_strategies(ReqPurchaseMEDStrategy, ConvPurchaseMEDStrategy)

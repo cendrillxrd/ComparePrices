@@ -8,26 +8,36 @@ from utils.bot_helper import send_notification_to_all, send_notification_to_admi
 from utils.df_helper import get_seller_discount_df
 from utils.excel_helper import load_excel_with_formulas
 from workers.excel_formater import ExcelFormatter
-from workers.info_collector import InfoCollector
-from workers.info_redactor import InfoRedactor
+from workers.info_ozon_collector import InfoOZONCollector
+from workers.info_ozon_redactor import InfoOZONRedactor
+from workers.info_wb_collector import InfoWBCollector
+from workers.info_wb_redactor import InfoWBRedactor
 from workers.price_updater import PriceUpdater
-from DTO.columns_dto import ColumnsDTO
+from DTO.columns_dto import WBColumnsDTO
 
-columns_dto = ColumnsDTO()
+columns_dto = WBColumnsDTO()
 setup_logging()
 logger = logging.getLogger(__name__)
 
 
 def main():
-    logger.info(f'Запуск программы')
-    info_collector = InfoCollector()
-    info = info_collector.collect_info()
+    type = int(input())
+    if type == 1:
+        logger.info(f'Запуск программы')
+        info_collector = InfoWBCollector()
+        info = info_collector.collect_info()
 
-    info_redactor = InfoRedactor()
-    info_redacted = info_redactor.redact_info(info)
+        info_redactor = InfoWBRedactor()
+        info_redacted = info_redactor.redact_info(info)
 
-    excel_formatter = ExcelFormatter(info_redacted)
-    excel_formatter.get_excel_for_comparison()
+        excel_formatter = ExcelFormatter(info_redacted)
+        excel_formatter.get_excel_for_comparison()
+    elif type == 2:
+        info_collector = InfoOZONCollector()
+        info = info_collector.collect_info()
+
+        info_redactor = InfoOZONRedactor()
+        info_redacted = info_redactor.redact_info(info)
 
     PRICE_UPDATE = False
     if PRICE_UPDATE:

@@ -2,10 +2,10 @@ from dataclasses import asdict, dataclass
 
 
 @dataclass
-class ColumnsDTO:
+class WBColumnsDTO:
     wb_article: str = 'Артикул WB'
     seller_article: str = 'Артикул продавца'
-    ozon_id: str = 'Ozon ID'
+    ozon_id: str = 'OZON ID'
     category: str = 'Категория'
     name: str = 'Наименование'
     brand: str = 'Бренд'

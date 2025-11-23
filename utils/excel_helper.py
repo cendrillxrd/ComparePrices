@@ -1,10 +1,10 @@
 from openpyxl.styles import PatternFill
 import xlwings as xw
 import pandas as pd
-from DTO.columns_dto import ColumnsDTO
+from DTO.columns_dto import WBColumnsDTO
 from DTO.dop_columns import DopColumnsDTO
 
-columns_dto = ColumnsDTO()
+columns_dto = WBColumnsDTO()
 dop_columns_dto = DopColumnsDTO()
 
 yellow_fill = PatternFill(start_color='FFFF00',  # Желтый цвет
@@ -48,7 +48,7 @@ def load_excel_with_formulas(filename: str) -> pd.DataFrame:
                        dop_columns_dto.mu_taking_into_account_the_wb_commission,
                        dop_columns_dto.max_discount_including_commission]
     for col in percent_columns:
-        if col in df.columns:
+        if col in df.wb_columns:
             df[col] = (df[col] * 100).round().astype(int)
 
     return df

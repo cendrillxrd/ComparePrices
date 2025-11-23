@@ -5,7 +5,7 @@ import pandas as pd
 
 
 @dataclass
-class InfoDTO:
+class InfoWBDTO:
     wb_prices: Optional[pd.DataFrame] = None
     med_prices: Optional[pd.DataFrame] = None
     wb_cards_prices: Optional[pd.DataFrame] = None

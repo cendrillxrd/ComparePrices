@@ -1,6 +1,6 @@
 import pandas as pd
-from DTO.columns_dto import ColumnsDTO
-columns_dto = ColumnsDTO()
+from DTO.columns_dto import WBColumnsDTO
+columns_dto = WBColumnsDTO()
 
 def get_seller_discount_df(df: pd.DataFrame) -> pd.DataFrame:
     new_df = df[[columns_dto.wb_article, columns_dto.seller_discount]].copy()

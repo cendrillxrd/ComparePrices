@@ -8,13 +8,18 @@ from strategies.correct_strategies import (CorrCollectionsStrategy,
                                            CorrPricesStrategy,
                                            CorrPromoStrategy,
                                            CorrStocksStrategy,
-                                           CorrWbPricesStrategy, CorrPurchaseStrategy, CorrExcelStrategy)
+                                           CorrWbPricesStrategy, CorrPurchaseStrategy, CorrExcelStrategy,
+                                           CorrectCardsCollections, CorrectArticlePrices, CorrectOZONinfo,
+                                           CorrectToClientStrategy, CorrectFromClientStrategy,
+                                           CorrectPricesOZONStrategy)
 from strategies.merge_strategies import (MergeCollectionsStrategy,
                                          MergePricesStrategy,
                                          MergePromoStrategy,
                                          MergeStocksStrategy,
                                          MergeWbCollectionsStrategy,
-                                         MergeWbPricesStrategy, MergePurchaseStrategy)
+                                         MergeWbPricesStrategy, MergePurchaseStrategy, MergeCardsCollections,
+                                         MergeArticlePrices, MergeOZONWithCollectionsStrategy, MergeToClientStrategy,
+                                         MergeFromClientStrategy)
 from workers.corrector import Corrector
 from workers.merger import Merger
 
@@ -82,6 +87,42 @@ class RedactionService:
         collections_corrected = self.corrector.correct(collections_merged)
         return collections_corrected
 
+    @with_strategies(merge_strategy_cls=MergeCardsCollections, correcter_strategy_cls=CorrectCardsCollections)
+    def merge_cards_with_collections(self, cards_df: pd.DataFrame, collections_df: pd.DataFrame, col_name) -> pd.DataFrame:
+        merged_df = self.merger.merge(cards_df, collections_df)
+        corrected_df = self.corrector.correct(merged_df, col_name=col_name)
+        return corrected_df
+
+    @with_strategies(merge_strategy_cls=MergeArticlePrices, correcter_strategy_cls=CorrectArticlePrices)
+    def merge_articles_with_prices(self, articles_df: pd.DataFrame, prices_df: pd.DataFrame) -> pd.DataFrame:
+        merged_df = self.merger.merge(articles_df, prices_df)
+        corrected_df = self.corrector.correct(merged_df)
+        return corrected_df
+
+    @with_strategies(merge_strategy_cls=MergeOZONWithCollectionsStrategy, correcter_strategy_cls=CorrectOZONinfo)
+    def merge_with_med_collections_ozon(self, main_df: pd.DataFrame, collections_df: pd.DataFrame) -> pd.DataFrame:
+        med_collections_merged = self.merger.merge(main_df, collections_df)
+        med_collections_corrected = self.corrector.correct(med_collections_merged)
+        return med_collections_corrected
+
+    @with_strategies(merge_strategy_cls=MergeToClientStrategy, correcter_strategy_cls=CorrectToClientStrategy)
+    def merge_with_to_client(self, main_df: pd.DataFrame, to_client_df: pd.DataFrame) -> pd.DataFrame:
+        to_client_merged = self.merger.merge(main_df, to_client_df)
+        corrected_df = self.corrector.correct(to_client_merged)
+        return corrected_df
+
+    @with_strategies(merge_strategy_cls=MergeFromClientStrategy, correcter_strategy_cls=CorrectFromClientStrategy)
+    def merge_with_from_client(self, main_df: pd.DataFrame, from_client_df: pd.DataFrame) -> pd.DataFrame:
+        from_client_merged = self.merger.merge(main_df, from_client_df)
+        corrected_df = self.corrector.correct(from_client_merged)
+        corrected_df.to_csv('from_client_merged.csv', index=False, encoding='utf-8')
+        return corrected_df
+
+    @with_strategies(merge_strategy_cls=MergePricesStrategy, correcter_strategy_cls=CorrectPricesOZONStrategy)
+    def merge_with_prices(self, main_df: pd.DataFrame, prices_df: pd.DataFrame) -> pd.DataFrame:
+        merged_df = self.merger.merge(main_df, prices_df)
+        return merged_df
+
     @with_strategies(MergeCollectionsStrategy)
     def merge_collections(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
         logger.info('Обработка данных по коллекциям')
@@ -92,7 +133,6 @@ class RedactionService:
     def merge_with_purchase(self, collections_df: pd.DataFrame, purchase_df: pd.DataFrame) -> pd.DataFrame:
         logger.info('Обработка закупки')
         purchase_merged = self.merger.merge(collections_df, purchase_df)
-        # purchase_corrected = self.corrector.correct(purchase_merged)
         return purchase_merged
 
 

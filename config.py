@@ -1,20 +1,28 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-from DTO.columns_dto import ColumnsDTO
+from DTO.columns_dto import WBColumnsDTO
+from DTO.ozon_columns_dto import OZONColumnsDTO
 
-columns = ColumnsDTO()
+wb_columns = WBColumnsDTO()
+ozon_columns = OZONColumnsDTO()
 
 load_dotenv()
 
-API_KEYS = {
+API_KEYS_WB = {
     'Price_discount_API_KEY': os.getenv('PRICE_DISCOUNT_API_KEY'),
     'Analytics_Statistics_API_KEY': os.getenv('ANALYTICS_STATISTICS_API_KEY')
 }
 
 PURCHASE_LOGIN = os.getenv('PURCHASE_LOGIN')
 PURCHASE_PASSWORD = os.getenv('PURCHASE_PASSWORD')
+
+API_KEY_OZON = os.getenv('OZON_API_KEY')
+CLIENT_ID = os.getenv('CLIENT_ID')
+
+YANDEX_API = os.getenv('YANDEX_API')
 
 BASE_URLS = {
     'dp-calendar': 'https://dp-calendar-api.wildberries.ru',
@@ -24,29 +32,31 @@ BASE_URLS = {
     'wb_http': 'https://catalog.wb.ru/sellers/v4/catalog',
     'med_collections_1': 'https://med-online.ru/upload/acrit.exportproplus/file.OZON.xlsx?1740656479',
     'med_collections_2': 'https://med-online.ru/upload/acrit.exportproplus/file.OZONdop.xlsx?1744707024',
-    'med_purchase': 'https://med-online.ru/upload/1cdata/cost.csv'
+    'med_purchase': 'https://med-online.ru/upload/1cdata/cost.csv',
+    'http': '',
+    'ozon': 'https://api-seller.ozon.ru',
 }
 
-BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
-                     'vendorCode': columns.seller_article,
-                     'Артикул': columns.seller_article,
-                     'price': columns.wb_price_without_discount,
-                     'price_seller': columns.wb_price_with_seller_discount,
-                     'Цена без скидки': columns.med_price_without_discount,
-                     'Цена со скидкой': columns.med_price_with_discount,
-                     'subjectName': columns.category,
-                     'name': columns.name,
-                     'brandName': columns.name,
-                     'stock_fbw': columns.stock_fbw,
-                     'stock_fbs': columns.stock_fbs,
-                     'discount': columns.seller_discount,
-                     'planDiscount': columns.plan_discount,
-                     'id': columns.wb_article,
-                     'ID': columns.ozon_id,
-                     'toClientCount': columns.stock_in_way_to_client,
-                     'fromClientCount': columns.stock_in_way_from_client,
-                     'OfferId': columns.ozon_id,
-                     'Cost': columns.purchase,
+BASE_COLUMNS_NAME_WB = {'nmID': wb_columns.wb_article,
+                     'vendorCode': wb_columns.seller_article,
+                     'Артикул': wb_columns.seller_article,
+                     'price': wb_columns.wb_price_without_discount,
+                     'price_seller': wb_columns.wb_price_with_seller_discount,
+                     'Цена без скидки': wb_columns.med_price_without_discount,
+                     'Цена со скидкой': wb_columns.med_price_with_discount,
+                     'subjectName': wb_columns.category,
+                     'name': wb_columns.name,
+                     'brandName': wb_columns.name,
+                     'stock_fbw': wb_columns.stock_fbw,
+                     'stock_fbs': wb_columns.stock_fbs,
+                     'discount': wb_columns.seller_discount,
+                     'planDiscount': wb_columns.plan_discount,
+                     'id': wb_columns.wb_article,
+                     'ID': wb_columns.ozon_id,
+                     'toClientCount': wb_columns.stock_in_way_to_client,
+                     'fromClientCount': wb_columns.stock_in_way_from_client,
+                     'OfferId': wb_columns.ozon_id,
+                     'Cost': wb_columns.purchase,
                      'status': 'Статус загрузки',
                      'uploadID': 'ID загрузки',
                      'uploadDate': 'Дата',
@@ -55,9 +65,32 @@ BASE_COLUMNS_NAME = {'nmID': columns.wb_article,
                      'techSizeName': 'Размер',
                      'clubDiscount': 'Скидка WB клуба',
                      'errorText': 'Текст ошибки'
-                     }
+                         }
 
-FILE_PATH = 'C:/Users/Admin/Desktop/'
+BASE_COLUMNS_NAME_OZON = {'ID': ozon_columns.ozon_id,
+                        'Артикул': ozon_columns.ozon_id,
+                        'SKU': ozon_columns.ozon_article,
+                        'sku': ozon_columns.ozon_article,
+                        'return_from_customer_stock_count': ozon_columns.in_way_from_client,
+                           # 'brand': ozon_columns.brand,
+                        'subjectName': ozon_columns.name,
+                        'Barcode': ozon_columns.barcode,
+                        'Тип': ozon_columns.category,
+                        'Название товара': ozon_columns.name,
+                           # 'sex': ozon_columns.sex,
+                        'Доступно к продаже по схеме FBS, шт.':  ozon_columns.fbs_stocks,
+                        'Зарезервировано, шт': ozon_columns.fbs_reserv,
+                        'Доступно к продаже по схеме FBO, шт.': ozon_columns.fbo_stocks,
+                        'Зарезервировано на моих складах, шт': ozon_columns.fbo_reserv,
+                        'Цена до скидки (перечеркнутая цена), ₽': ozon_columns.price_without_discount,
+                        # 'fromClientCount': ozon_columns.in_way_from_client,
+                        # 'dt': ozon_columns.date,
+                        'avgPosition_day': ozon_columns.avg_pos_day,
+                        # 'avgPosition_month': ozon_columns.avg_pos_month,
+                        # 'availability': ozon_columns.availability,
+                        'Количество': ozon_columns.in_way_to_client,
+                        }
+
 TASKS_STATUS = 'Tasks_status'
 
 LIMIT_PRICE = 1000  # <= 1000
@@ -69,7 +102,7 @@ TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
 TIME_SLEEP_NEW_PRICE_TASK = 1 # >= 0.6
 
-BASE_MP_COMMISSION = 0.5
+BASE_MP_COMMISSION = 0.55
 
 DELAY_INTERVAL=10
 
@@ -124,3 +157,18 @@ CLUB_PROCENT = 2
 EXCEL_FILE_NAME = 'compare_price'
 
 RETRY_TIMES = 5
+
+
+ORDER_STATUSES = ['Ожидает в ПВЗ', 'Доставляется', 'Ожидает сборки', 'Ожидает отгрузки']
+
+LIMIT_FUNNEL = 1000
+TIME_SLEEP_FUNNEL = 60
+TIME_SLEEP_REPORT = 60
+TIME_SLEEP_CARDS_LINK = 30
+TIME_SLEEP_STOCKS_FBS = 0.5
+
+
+YANDEX_FILE_NAME = 'prices.csv'
+YANDEX_DIR_NAME = 'Цены OZON'
+MAIN_DIR = f'{str(Path(__file__).parent)}'
+MAIN_DIR_PRICES = f'{str(Path(__file__).parent.joinpath(YANDEX_FILE_NAME))}'

@@ -12,7 +12,7 @@ from logging_config import setup_logging
 from utils.excel_helper import (blue_fill, green_fill, orange_fill, pink_fill,
                                 red_fill, yellow_fill)
 from DTO.dop_columns import DopColumnsDTO, asdict
-from DTO.columns_dto import ColumnsDTO
+from DTO.columns_dto import WBColumnsDTO
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ class ExcelFormatter:
     def __init__(self, df):
         self.work_book = Workbook()
         self.df = df
-        self.main_columns_dto = ColumnsDTO()
+        self.main_columns_dto = WBColumnsDTO()
         self.new_columns_dto = DopColumnsDTO()
         self.actual_columns = []
         self._create_percentage_style()
@@ -48,12 +48,12 @@ class ExcelFormatter:
         """Добавляет новые колонки в датафрейм"""
         new_columns = asdict(self.new_columns_dto)
         for col_name in new_columns.values():
-            if col_name not in self.df.columns:
+            if col_name not in self.df.wb_columns:
                 self.df[col_name] = ""  # Добавляем пустые колонки
 
     def _write_dataframe(self, ws):
         # Переупорядочиваем колонки, чтобы выпадающий список был между РРЦ и Остаток FBS
-        for col in self.df.columns:
+        for col in self.df.wb_columns:
             if col not in (self.new_columns_dto.solution, self.new_columns_dto.new_discount):
                 if col == self.main_columns_dto.wb_price_without_discount:  # Перед РРЦ
                     # Добавляем колонку с выпадающим списком
@@ -187,6 +187,6 @@ class ExcelFormatter:
 
     @staticmethod
     def _auto_fit_columns(ws):
-        for col in ws.columns:
+        for col in ws.wb_columns:
             max_length = max((len(str(cell.value)) for cell in col if cell.value), default=0)
             ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2

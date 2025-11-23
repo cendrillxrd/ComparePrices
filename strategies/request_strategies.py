@@ -4,8 +4,10 @@ import time
 from abc import ABC, abstractmethod
 from typing import Union
 
+from DTO.orders_dto import OrdersDTO
 from config import (LIMIT_PRICE, LIMIT_STOCKS, TIME_SLEEP_PRICE,
-                    TIME_SLEEP_STOCKS, PURCHASE_PASSWORD, PURCHASE_LOGIN, LIMIT_NEW_PRICE_TASK)
+                    TIME_SLEEP_STOCKS, PURCHASE_PASSWORD, PURCHASE_LOGIN, LIMIT_NEW_PRICE_TASK, TIME_SLEEP_REPORT,
+                    TIME_SLEEP_STOCKS_FBS)
 from DTO.price_dto import PriceDTO
 from DTO.promo_dto import PromoDTO
 from DTO.promo_goods import PromoGoodsDTO
@@ -252,3 +254,80 @@ class ReqPurchaseMEDStrategy(RequestStrategy):
     def get_info(self, client: 'Client', **kwargs) -> list[dict]:
         response = client.make_request(url_key=self.url_key, login=self.login, password=self.password)
         return response
+
+class ReqOrdersInfoOZONReportStrategy(RequestStrategy):
+    endpoint = '/v1/report/postings/create'
+    url_key = 'ozon'
+    orders_dto = OrdersDTO()
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        schema = kwargs['schema']
+        payload = asdict(self.orders_dto)
+        payload['filter']['delivery_schema'] = [schema]
+        logger.info('Запрос заказов')
+        response = client.make_request(method='POST',
+                                       url_key=self.url_key,
+                                       endpoint=self.endpoint,
+                                       payload=payload)
+        code = response['result']['code']
+        return code
+
+class ReqCardsInfoOZONReportStrategy(RequestStrategy):
+    endpoint = '/v1/report/products/create'
+    url_key = 'ozon'
+
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        logger.info('Запрос карточек')
+        response = client.make_request(method='POST',
+                                       url_key=self.url_key,
+                                       endpoint=self.endpoint)
+        code = response['result']['code']
+        return code
+
+class ReqGetLinkOZONStrategy(RequestStrategy):
+    endpoint = '/v1/report/info'
+    url_key = 'ozon'
+
+    def get_info(self, client: 'Client', **kwargs) -> Union[list[dict], bool]:
+        logger.info('Получение ссылки')
+        payload = {'code': kwargs['code']}
+        response = client.make_request(method='POST',
+                                       url_key=self.url_key,
+                                       payload=payload,
+                                       endpoint=self.endpoint)
+        status = response['result']['status']
+        if status == 'success':
+            file_link = response['result']['file']
+            return file_link
+        elif status in ('waiting', 'processing'):
+            time.sleep(TIME_SLEEP_REPORT)
+            return self.get_info(client, code=kwargs['code'])
+        return False
+
+class ReqGetLinkDataOZONStrategy(RequestStrategy):
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        logger.info('Получение данных из ссылки')
+        link = kwargs['link']
+        response = client.make_request(url=link)
+        return response
+
+class ReqStocksFboOZONStrategy(RequestStrategy):
+    endpoint = '/v1/analytics/stocks'
+    url_key = 'ozon'
+
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        logger.info('Запрос остатков FBS')
+        result = []
+        loaded_cards = 0
+        sku = kwargs['sku']
+        for i in range(0, len(sku), 100):
+            time.sleep(TIME_SLEEP_STOCKS_FBS)
+            payload = {'skus': sku[i:i+100]}
+            response = client.make_request(method='POST',
+                                           url_key=self.url_key,
+                                           payload=payload,
+                                           endpoint=self.endpoint)
+            items = response['items']
+            loaded_cards += len(items)
+            logger.debug(f'Загружено карт: {loaded_cards}')
+            result.extend(items)
+        return result

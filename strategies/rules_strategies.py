@@ -4,13 +4,13 @@ from io import BytesIO, StringIO
 import pandas as pd
 
 from DTO.dop_columns import DopColumnsDTO
-from config import BASE_COLUMNS_NAME, CLUB_PROCENT
-from DTO.columns_dto import ColumnsDTO
+from config import BASE_COLUMNS_NAME_WB, CLUB_PROCENT
+from DTO.columns_dto import WBColumnsDTO
 
 
 class RulesStrategy(ABC):
     def __init__(self):
-        self.columns = ColumnsDTO()
+        self.columns = WBColumnsDTO()
         self.dop_columns = DopColumnsDTO()
 
     @abstractmethod
