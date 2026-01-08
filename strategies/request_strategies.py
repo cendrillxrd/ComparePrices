@@ -5,9 +5,10 @@ from abc import ABC, abstractmethod
 from typing import Union
 
 from DTO.orders_dto import OrdersDTO
+from DTO.ozon_price_dto import OZONPriceDTO
 from config import (LIMIT_PRICE, LIMIT_STOCKS, TIME_SLEEP_PRICE,
                     TIME_SLEEP_STOCKS, PURCHASE_PASSWORD, PURCHASE_LOGIN, LIMIT_NEW_PRICE_TASK, TIME_SLEEP_REPORT,
-                    TIME_SLEEP_STOCKS_FBS)
+                    TIME_SLEEP_STOCKS_FBS, TIME_SLEEP_PRICES)
 from DTO.price_dto import PriceDTO
 from DTO.promo_dto import PromoDTO
 from DTO.promo_goods import PromoGoodsDTO
@@ -39,7 +40,7 @@ class ReqWBNewPricesStrategy(RequestStrategy):
                             endpoint=self.endpoint)
         return response['data']['id']
 
-class ReqStatusNewPricesStrategy(RequestStrategy):
+class ReqStatusNewPricesWBStrategy(RequestStrategy):
     endpoint = '/api/v2/history/goods/task'
     api_type = 'Price_discount_API_KEY'
     url_key = 'discounts-prices'
@@ -185,7 +186,7 @@ class ReqWbCardsPricesStrategy(RequestStrategy):
             product_list = self.get_product_list(client, str(page))
         return cards
 
-class ReqStocksStrategy(RequestStrategy):
+class ReqStocksWBStrategy(RequestStrategy):
     endpoint = "/api/v2/stocks-report/products/products"
     api_type = "Analytics_Statistics_API_KEY"
     url_key = "seller-analytics"
@@ -327,6 +328,41 @@ class ReqStocksFboOZONStrategy(RequestStrategy):
                                            payload=payload,
                                            endpoint=self.endpoint)
             items = response['items']
+            loaded_cards += len(items)
+            logger.debug(f'Загружено карт: {loaded_cards}')
+            result.extend(items)
+        return result
+
+class ReqPricesOZONStrategy(RequestStrategy):
+    endpoint = '/v5/product/info/prices'
+    url_key = 'ozon'
+    ozon_price_dto = OZONPriceDTO()
+
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        logger.info('Запрос цен OZON')
+        result = []
+        loaded_cards = 0
+        payload = asdict(self.ozon_price_dto)
+        response = client.make_request(method='POST',
+                                       url_key=self.url_key,
+                                       payload=payload,
+                                       endpoint=self.endpoint)
+        items = response['items']
+        cursor = response['cursor']
+        total = response['total']
+        loaded_cards += len(items)
+        logger.debug(f'Загружено карт: {loaded_cards}')
+        result.extend(items)
+
+        for i in range(LIMIT_PRICE, total, LIMIT_PRICE):
+            time.sleep(TIME_SLEEP_PRICES)
+            payload['cursor'] = cursor
+            response = client.make_request(method='POST',
+                                           url_key=self.url_key,
+                                           payload=payload,
+                                           endpoint=self.endpoint)
+            items = response['items']
+            cursor = response['cursor']
             loaded_cards += len(items)
             logger.debug(f'Загружено карт: {loaded_cards}')
             result.extend(items)

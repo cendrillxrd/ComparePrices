@@ -20,8 +20,10 @@ class InfoOZONRedactor:
             (self.red.merge_with_to_client, info.to_client),
             (self.red.merge_with_from_client, info.from_client),
             (self.red.merge_with_med_collections_ozon, ozon_collections_merged),
+            (self.red.merge_with_med_prices_ozon, info.med_prices),
+            (self.red.merge_with_seller_prices, info.seller_prices),
             (self.red.merge_with_prices, info.prices),
-            (self.red.merge_with_purchase, info.purchase),
+            (self.red.merge_with_ozon_purchase, info.purchase),
         ]
 
         result = info.cards_info
@@ -29,5 +31,4 @@ class InfoOZONRedactor:
         for method, arg in operations:
             result = method(result, arg)
         main_table = result[[col for col in asdict(self.main_columns).values() if col in result.columns]].copy()
-        main_table.to_csv('funnel_prices2.csv', index=False, encoding='utf-8')
-        return result
+        return main_table

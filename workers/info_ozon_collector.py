@@ -17,17 +17,25 @@ class InfoOZONCollector:
         self.main_columns_dto = OZONColumnsDTO()
 
     def collect_info(self) -> InfoOZONDTO:
+        cards_info = self.ozon.get_cards_info()
+        prices = self.ozon.get_prices_info(cards_info)
+
+
+
+        seller_prices = self.ozon.get_seller_prices()
+        med_prices = self.med.get_med_prices()
+
         to_client = self.ozon.get_stocks_to_client()
 
         collections_first = self.med.get_med_collections_first()
         collections_second = self.med.get_med_collections_second()
 
-        cards_info = self.ozon.get_cards_info()
+        # cards_info = self.ozon.get_cards_info()
 
         skus = cards_info[cards_info[self.main_columns_dto.status] == 'Продается'][self.main_columns_dto.ozon_article].to_list()
         from_client_fbo = self.ozon.get_from_client_fbo(sku=skus)
 
-        prices = self.ozon.get_prices_info(cards_info, collections_first, collections_second)
+        # prices = self.ozon.get_prices_info(cards_info)
 
         purchase = self.med.get_med_purchase()
 
@@ -38,5 +46,7 @@ class InfoOZONCollector:
             prices=prices,
             to_client=to_client,
             from_client=from_client_fbo,
-            purchase=purchase
+            purchase=purchase,
+            seller_prices=seller_prices,
+            med_prices=med_prices,
         )

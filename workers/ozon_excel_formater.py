@@ -7,23 +7,25 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from config import BASE_MP_COMMISSION, EXCEL_FILE_NAME
+from DTO.ozon_columns_dto import OZONColumnsDTO
+from DTO.ozon_dop_columns import OZONDopColumnsDTO
+from config import BASE_MP_COMMISSION, WB_EXCEL_FILE_NAME, OZON_EXCEL_FILE_NAME
 from logging_config import setup_logging
 from utils.excel_helper import (blue_fill, green_fill, orange_fill, pink_fill,
-                                red_fill, yellow_fill)
-from DTO.dop_columns import DopColumnsDTO, asdict
+                                red_fill, yellow_fill, ozon_color_fill, light_green_fill)
+from DTO.wb_dop_columns import WBDopColumnsDTO, asdict
 from DTO.columns_dto import WBColumnsDTO
 
 setup_logging()
 logger = logging.getLogger(__name__)
 
 
-class ExcelFormatter:
+class OZONExcelFormatter:
     def __init__(self, df):
         self.work_book = Workbook()
         self.df = df
-        self.main_columns_dto = WBColumnsDTO()
-        self.new_columns_dto = DopColumnsDTO()
+        self.main_columns_dto = OZONColumnsDTO()
+        self.new_columns_dto = OZONDopColumnsDTO()
         self.actual_columns = []
         self._create_percentage_style()
 
@@ -42,26 +44,26 @@ class ExcelFormatter:
         self._apply_percentage_format(ws, col_letters)
         self._apply_conditional_formatting(ws, col_letters)
         self._auto_fit_columns(ws)
-        self.work_book.save(f"{EXCEL_FILE_NAME}.xlsx")
+        self.work_book.save(f"{OZON_EXCEL_FILE_NAME}.xlsx")
 
     def _add_new_columns_to_dataframe(self):
         """Добавляет новые колонки в датафрейм"""
         new_columns = asdict(self.new_columns_dto)
         for col_name in new_columns.values():
-            if col_name not in self.df.wb_columns:
+            if col_name not in self.df.columns:
                 self.df[col_name] = ""  # Добавляем пустые колонки
 
     def _write_dataframe(self, ws):
         # Переупорядочиваем колонки, чтобы выпадающий список был между РРЦ и Остаток FBS
-        for col in self.df.wb_columns:
-            if col not in (self.new_columns_dto.solution, self.new_columns_dto.new_discount):
-                if col == self.main_columns_dto.wb_price_without_discount:  # Перед РРЦ
+        for col in self.df.columns:
+            if col not in (self.new_columns_dto.solution, self.new_columns_dto.new_price):
+                if col == self.main_columns_dto.price_without_discount:  # Перед РРЦ
                     # Добавляем колонку с выпадающим списком
                     self.actual_columns.append(self.new_columns_dto.solution)
                 self.actual_columns.append(col)
                 if col == self.main_columns_dto.seller_discount:  # После скидки продавца
-                    # Добавляем колонку с новой скидкой
-                    self.actual_columns.append(self.new_columns_dto.new_discount)
+                    # Добавляем колонку с новой ценой
+                    self.actual_columns.append(self.new_columns_dto.new_price)
 
         # Переупорядочиваем датафрейм
         ordered_df = self.df.reindex(columns=self.actual_columns)
@@ -107,24 +109,24 @@ class ExcelFormatter:
                     cell.style = "percentage_integer_style"
 
     def _formula_mu_original(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_without_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"={columns[self.main_columns_dto.price_without_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
         return formula
 
     def _formula_mu_with_our_discount(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"={columns[self.main_columns_dto.price_with_seller_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
         return formula
 
     def _formula_mu_with_discount_from_the_price_with_spp(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_with_wb_club]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"={columns[self.main_columns_dto.price_with_ozon_club]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
         return formula
 
     def _formula_mu_taking_into_account_the_wb_commission(self, columns, row):
-        formula = (f"=({columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} - {columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} *"
+        formula = (f"=({columns[self.main_columns_dto.price_with_seller_discount]}{row} - {columns[self.main_columns_dto.price_with_seller_discount]}{row} *"
                    f" {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.purchase]}{row} - 1")
         return formula
 
     def _formula_max_discount_including_commission(self, columns, row):
-        formula = f"=1 - {columns[self.main_columns_dto.purchase]}{row} / (1 - {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.wb_price_without_discount]}{row}"
+        formula = f"=1 - {columns[self.main_columns_dto.purchase]}{row} / (1 - {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.price_without_discount]}{row}"
         return formula
 
     def _fill_formulas(self, ws, cols):
@@ -136,11 +138,12 @@ class ExcelFormatter:
             ws[f"{cols[self.new_columns_dto.mu_taking_into_account_the_wb_commission]}{row}"] = self._formula_mu_taking_into_account_the_wb_commission(cols, row)
             ws[f"{cols[self.new_columns_dto.max_discount_including_commission]}{row}"] = self._formula_max_discount_including_commission(cols, row)
 
-            ws[f"{cols[self.main_columns_dto.wb_discount]}{row}"].fill = pink_fill
+            ws[f"{cols[self.main_columns_dto.ozon_discount]}{row}"].fill = ozon_color_fill
             ws[f"{cols[self.main_columns_dto.seller_discount]}{row}"].fill = green_fill
-            ws[f"{cols[self.new_columns_dto.new_discount]}{row}"].fill = yellow_fill
+            ws[f"{cols[self.new_columns_dto.new_price]}{row}"].fill = yellow_fill
+            ws[f"{cols[self.main_columns_dto.equilibrium_price]}{row}"].fill = light_green_fill
 
-            columns_for_blue = [self.main_columns_dto.wb_price_with_wb_discount,
+            columns_for_blue = [self.main_columns_dto.price_with_ozon_discount,
                                 self.main_columns_dto.med_price_with_discount,]
             for col_name in columns_for_blue:
                 ws[f"{cols[col_name]}{row}"].fill = blue_fill
@@ -170,13 +173,13 @@ class ExcelFormatter:
                       f"{cols[self.main_columns_dto.price_difference]}{last_row}"
         rule_red = FormulaRule(
             formula=[f"{cols[self.main_columns_dto.med_price_with_discount]}2 - "
-                     f"{cols[self.main_columns_dto.wb_price_with_wb_discount]}2 >= 1000"],
+                     f"{cols[self.main_columns_dto.price_with_ozon_discount]}2 >= 1000"],
             stopIfTrue=True,
             fill=red_fill
         )
 
         rule_orange = FormulaRule(
-            formula=[f"{cols[self.main_columns_dto.wb_price_with_wb_discount]}2 - "
+            formula=[f"{cols[self.main_columns_dto.price_with_ozon_discount]}2 - "
                      f"{cols[self.main_columns_dto.med_price_with_discount]}2 >= 1000"],
             stopIfTrue=True,
             fill=orange_fill
@@ -187,6 +190,6 @@ class ExcelFormatter:
 
     @staticmethod
     def _auto_fit_columns(ws):
-        for col in ws.wb_columns:
+        for col in ws.columns:
             max_length = max((len(str(cell.value)) for cell in col if cell.value), default=0)
             ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2

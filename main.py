@@ -2,12 +2,13 @@ import logging
 
 import pandas as pd
 
-from config import EXCEL_FILE_NAME, TASKS_STATUS
+from config import WB_EXCEL_FILE_NAME, TASKS_STATUS
 from logging_config import setup_logging
 from utils.bot_helper import send_notification_to_all, send_notification_to_admin
 from utils.df_helper import get_seller_discount_df
 from utils.excel_helper import load_excel_with_formulas
-from workers.excel_formater import ExcelFormatter
+from workers.ozon_excel_formater import OZONExcelFormatter
+from workers.wb_excel_formater import WBExcelFormatter
 from workers.info_ozon_collector import InfoOZONCollector
 from workers.info_ozon_redactor import InfoOZONRedactor
 from workers.info_wb_collector import InfoWBCollector
@@ -30,7 +31,7 @@ def main():
         info_redactor = InfoWBRedactor()
         info_redacted = info_redactor.redact_info(info)
 
-        excel_formatter = ExcelFormatter(info_redacted)
+        excel_formatter = WBExcelFormatter(info_redacted)
         excel_formatter.get_excel_for_comparison()
     elif type == 2:
         info_collector = InfoOZONCollector()
@@ -39,9 +40,12 @@ def main():
         info_redactor = InfoOZONRedactor()
         info_redacted = info_redactor.redact_info(info)
 
+        excel_formatter = OZONExcelFormatter(info_redacted)
+        excel_formatter.get_excel_for_comparison()
+
     PRICE_UPDATE = False
     if PRICE_UPDATE:
-        excel_df = load_excel_with_formulas(f'{EXCEL_FILE_NAME}.xlsx')
+        excel_df = load_excel_with_formulas(f'{WB_EXCEL_FILE_NAME}.xlsx')
         price_updater = PriceUpdater()
         price_updater.update_prices(excel_df)
 

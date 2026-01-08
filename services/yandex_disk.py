@@ -5,7 +5,6 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from yadisk import YaDisk
-from yadisk.exceptions import PathNotFoundError, ParentNotFoundError
 
 from config import YANDEX_FILE_NAME, YANDEX_DIR_NAME, YANDEX_API, MAIN_DIR_PRICES, MAIN_DIR
 

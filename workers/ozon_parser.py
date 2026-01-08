@@ -37,7 +37,7 @@ class OzonPriceParser:
         soup = BeautifulSoup(html_content, 'html.parser')
 
         tsHeadline600Large = soup.find(class_="tsHeadline600Large")
-        pdp_b7f_tsHeadline500Medium = soup.find(class_="pdp_f7b tsHeadline500Medium")
+        pdp_b7f_tsHeadline500Medium = soup.find(class_="pdp_bg4 tsHeadline500Medium")
 
         value1 = clean_price(tsHeadline600Large.get_text(strip=True)) if tsHeadline600Large else "Не найдено"
         value2 = clean_price(
@@ -97,7 +97,7 @@ class OzonPriceParser:
 
             return results
     @staticmethod
-    async def get_product_data_with_retry(session, article, user_agent, cookies_dict, max_retries=3, delay=0):
+    async def get_product_data_with_retry(session, article, user_agent, cookies_dict, max_retries=5, delay=0):
         """Асинхронное получение данных товара с повторными попытками при блокировке"""
         if delay > 0:
             await asyncio.sleep(delay)
@@ -119,7 +119,7 @@ class OzonPriceParser:
                         logger.info(f"Блокировка для {article}: HTTP {response.status} (попытка {attempt + 1}/{max_retries})")
 
                         if attempt < max_retries - 1:  # Если это не последняя попытка
-                            wait_time = 300  # Ожидание 1 минуту
+                            wait_time = 300 * attempt # Ожидание 5 минут
                             logger.info(f"Ожидание {wait_time} секунд перед повторной попыткой...")
                             await asyncio.sleep(wait_time)
 

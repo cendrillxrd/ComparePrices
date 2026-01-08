@@ -1,9 +1,10 @@
 from dataclasses import asdict, dataclass
 
 @dataclass
-class DopColumnsDTO:
+class OZONDopColumnsDTO:
     solution: str = 'Решение в разрезе остатка'
-    new_discount: str = 'Новая скидка'
+    new_price: str = 'Новая цена'
+    # new_price_for_equal: str = 'Цена для равновесия'
     # purchase: str = 'Закупка'
     mp_commission: str = 'Комиссия МП'
     mu_original: str = 'МU исходный'

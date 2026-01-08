@@ -2,10 +2,10 @@ from openpyxl.styles import PatternFill
 import xlwings as xw
 import pandas as pd
 from DTO.columns_dto import WBColumnsDTO
-from DTO.dop_columns import DopColumnsDTO
+from DTO.wb_dop_columns import WBDopColumnsDTO
 
 columns_dto = WBColumnsDTO()
-dop_columns_dto = DopColumnsDTO()
+dop_columns_dto = WBDopColumnsDTO()
 
 yellow_fill = PatternFill(start_color='FFFF00',  # Желтый цвет
                           end_color='FFFF00',
@@ -13,6 +13,10 @@ yellow_fill = PatternFill(start_color='FFFF00',  # Желтый цвет
 green_fill = PatternFill(start_color='c9eaa9',  # Зеленый цвет
                          end_color='c9eaa9',
                          fill_type='solid')
+light_green_fill = PatternFill(start_color='60e755',  # Зеленый цвет
+                         end_color='60e755',
+                         fill_type='solid')
+
 red_fill = PatternFill(start_color='FF0000',  # Красный цвет
                        end_color='FF0000',
                        fill_type='solid')
@@ -22,6 +26,9 @@ orange_fill = PatternFill(start_color="FFA500",
 blue_fill = PatternFill(start_color="9FD6E5",
                           end_color="9FD6E5",
                           fill_type="solid")
+ozon_color_fill = PatternFill(start_color="5295CB",
+                              end_color="5295CB",
+                              fill_type="solid")
 
 pink_fill = PatternFill(start_color="EC6FD8",
                         end_color="EC6FD8",
@@ -48,7 +55,7 @@ def load_excel_with_formulas(filename: str) -> pd.DataFrame:
                        dop_columns_dto.mu_taking_into_account_the_wb_commission,
                        dop_columns_dto.max_discount_including_commission]
     for col in percent_columns:
-        if col in df.wb_columns:
+        if col in df.columns:
             df[col] = (df[col] * 100).round().astype(int)
 
     return df

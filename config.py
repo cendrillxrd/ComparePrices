@@ -68,27 +68,22 @@ BASE_COLUMNS_NAME_WB = {'nmID': wb_columns.wb_article,
                          }
 
 BASE_COLUMNS_NAME_OZON = {'ID': ozon_columns.ozon_id,
+                        'offer_id': ozon_columns.ozon_id,
                         'Артикул': ozon_columns.ozon_id,
                         'SKU': ozon_columns.ozon_article,
                         'sku': ozon_columns.ozon_article,
                         'return_from_customer_stock_count': ozon_columns.in_way_from_client,
-                           # 'brand': ozon_columns.brand,
                         'subjectName': ozon_columns.name,
                         'Barcode': ozon_columns.barcode,
                         'Тип': ozon_columns.category,
                         'Название товара': ozon_columns.name,
-                           # 'sex': ozon_columns.sex,
                         'Доступно к продаже по схеме FBS, шт.':  ozon_columns.fbs_stocks,
                         'Зарезервировано, шт': ozon_columns.fbs_reserv,
                         'Доступно к продаже по схеме FBO, шт.': ozon_columns.fbo_stocks,
                         'Зарезервировано на моих складах, шт': ozon_columns.fbo_reserv,
                         'Цена до скидки (перечеркнутая цена), ₽': ozon_columns.price_without_discount,
-                        # 'fromClientCount': ozon_columns.in_way_from_client,
-                        # 'dt': ozon_columns.date,
-                        'avgPosition_day': ozon_columns.avg_pos_day,
-                        # 'avgPosition_month': ozon_columns.avg_pos_month,
-                        # 'availability': ozon_columns.availability,
                         'Количество': ozon_columns.in_way_to_client,
+                        'price': ozon_columns.price_with_seller_discount
                         }
 
 TASKS_STATUS = 'Tasks_status'
@@ -154,7 +149,8 @@ PARAMS = {
 
 CLUB_PROCENT = 2
 
-EXCEL_FILE_NAME = 'compare_price'
+WB_EXCEL_FILE_NAME = 'compare_price_wb'
+OZON_EXCEL_FILE_NAME = 'compare_price_ozon'
 
 RETRY_TIMES = 5
 
@@ -166,6 +162,7 @@ TIME_SLEEP_FUNNEL = 60
 TIME_SLEEP_REPORT = 60
 TIME_SLEEP_CARDS_LINK = 30
 TIME_SLEEP_STOCKS_FBS = 0.5
+TIME_SLEEP_PRICES = 1
 
 
 YANDEX_FILE_NAME = 'prices.csv'

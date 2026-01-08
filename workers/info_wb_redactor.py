@@ -16,7 +16,7 @@ class InfoWBRedactor:
         purchase_merged = self.red.merge_with_purchase(wb_collections_merged, info.purchase)
         operations = [
             (self.red.merge_with_med_prices, info.med_prices),
-            (self.red.merge_with_med_collections_ozon, purchase_merged),
+            (self.red.merge_with_med_collections, purchase_merged),
         ]
 
         if info.wb_promotions is not None:
@@ -31,4 +31,4 @@ class InfoWBRedactor:
         for method, arg in operations:
             result = method(result, arg)
 
-        return result[[col for col in asdict(self.columns).values() if col in result.wb_columns]]
+        return result[[col for col in asdict(self.columns).values() if col in result.columns]]

@@ -28,6 +28,24 @@ class MergePricesStrategy(MergeStrategies):
         merged_df = pd.merge(df1, df2, on=self.merge_on, how='left')
         return merged_df
 
+class MergePricesOZONStrategy(MergeStrategies):
+    def __init__(self, merge_on: str = ozon_columns_dto.ozon_article):
+        self.merge_on = merge_on
+
+    def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
+        df1[self.merge_on] = df1[self.merge_on].astype(str)
+        df2[self.merge_on] = df2[self.merge_on].astype(str)
+        merged_df = pd.merge(df1, df2, on=self.merge_on, how='left')
+        return merged_df
+
+class MergeSellerPricesStrategy(MergeStrategies):
+    def __init__(self, merge_on: str = wb_columns_dto.ozon_id):
+        self.merge_on = merge_on
+
+    def merge(self, df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
+        merged_df = pd.merge(df1, df2, on=self.merge_on, how='left')
+        return merged_df
+
 class MergePromoStrategy(MergeStrategies):
     def __init__(self, merge_on: str = wb_columns_dto.wb_article):
         self.merge_on = merge_on
@@ -45,7 +63,6 @@ class MergePurchaseStrategy(MergeStrategies):
         df2[self.merge_on] = df2[self.merge_on].astype(str)
         merged_df = pd.merge(df1, df2, on=self.merge_on, how='left')
         return merged_df
-
 
 class MergeStocksStrategy(MergeStrategies):
     def __init__(self, merge_on: str = wb_columns_dto.seller_article):

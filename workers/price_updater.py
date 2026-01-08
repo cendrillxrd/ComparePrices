@@ -18,7 +18,7 @@ class PriceUpdater:
         self.converter.set_strategy(ConvExcelStrategy())
         actual_excel_df = self.converter.convert(excel_df)
 
-        rules_applies_excel_df = self.price_corr.set_rule_old_collections(actual_excel_df)
-
+        rules_applies_excel_df = self.price_corr.set_rule_on_med(actual_excel_df)
+        rules_applies_excel_df = self.price_corr.set_rule_not_on_med(rules_applies_excel_df)
         final_df = self.red.correct_excel_df(rules_applies_excel_df)
         self.wb.create_task_for_change_prices(final_df)

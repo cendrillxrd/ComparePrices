@@ -4,7 +4,7 @@ from io import BytesIO, StringIO
 import numpy as np
 import pandas as pd
 
-from DTO.dop_columns import DopColumnsDTO
+from DTO.wb_dop_columns import WBDopColumnsDTO
 from config import BASE_COLUMNS_NAME_WB, CLUB_PROCENT, ORDER_STATUSES, BASE_COLUMNS_NAME_OZON
 from DTO.columns_dto import WBColumnsDTO, asdict
 from DTO.ozon_columns_dto import OZONColumnsDTO
@@ -14,7 +14,7 @@ class ConverterStrategy(ABC):
     def __init__(self):
         self.wb_columns = WBColumnsDTO()
         self.ozon_columns = OZONColumnsDTO()
-        self.dop_columns = DopColumnsDTO()
+        self.dop_columns = WBDopColumnsDTO()
 
 
     @abstractmethod
@@ -41,7 +41,7 @@ class ConvPromoGoodsWBStrategy(ConverterStrategy):
 
         return min_discount_promotions_df
 
-class ConvPromoIDStrategy(ConverterStrategy):
+class ConvPromoIDWBStrategy(ConverterStrategy):
     def converting(self, data: dict, **kwargs) -> list:
         promotions = pd.DataFrame(data)
         filtered_promotions = promotions[promotions['type'] == 'regular']
@@ -67,7 +67,6 @@ class ConvPricesWBStrategy(ConverterStrategy):
                             axis=1)
 
         return corrected_df
-
 
 class ConvPricesMEDStrategy(ConverterStrategy):
     def converting(self, data, **kwargs) -> pd.DataFrame:
@@ -124,10 +123,10 @@ class ConvPurchaseMEDStrategy(ConverterStrategy):
 class ConvExcelStrategy(ConverterStrategy):
     def converting(self, data, **kwargs) -> pd.DataFrame:
         df = data[~(data[self.wb_columns.seller_discount] == data[self.wb_columns.equilibrium_discount])]
-        df.loc[df[self.dop_columns.max_discount_including_commission] == 100, self.dop_columns.max_discount_including_commission] = 60
+        # df.loc[df[self.dop_columns.max_discount_including_commission] == 100, self.dop_columns.max_discount_including_commission] = 60
         return df
 
-class ConvStatusNewPricesStrategy(ConverterStrategy):
+class ConvStatusNewPricesWBStrategy(ConverterStrategy):
     def converting(self, data, **kwargs) -> pd.DataFrame:
         df = pd.DataFrame(data)
         columns_name = [column for column in df.columns if column in BASE_COLUMNS_NAME_WB]
@@ -141,7 +140,7 @@ class ConvStatusNewPricesStrategy(ConverterStrategy):
                          'Текст ошибки']
         return df[[col for col in needs_columns if col in df.columns]]
 
-class ConvStocksStrategy(ConverterStrategy):
+class ConvStocksWBStrategy(ConverterStrategy):
     def converting(self, data: dict, **kwargs) -> pd.DataFrame:
         """Преобразует данные об остатках в DataFrame"""
         stock_type = kwargs['stock_type']
@@ -212,8 +211,6 @@ class ConvOrdersInfoOZONStrategy(ConverterStrategy):
     def converting(self, data, **kwargs) -> pd.DataFrame:
         df = pd.read_csv(BytesIO(data.content), encoding='utf-8', sep=';')
 
-        # df.to_csv('orders_info.csv', encoding='utf-8', index=False)
-
         columns_name = [column for column in df.columns if column in BASE_COLUMNS_NAME_OZON]
 
         columns_rename = {k: BASE_COLUMNS_NAME_OZON.get(k) for k in columns_name}
@@ -230,8 +227,6 @@ class ConvStocksFboOZONStrategy(ConverterStrategy):
     def converting(self, data, **kwargs) -> pd.DataFrame:
         df = pd.DataFrame(data)
 
-        df.to_csv('fbo_stocks.csv', encoding='utf-8', index=False)
-
         columns_name = [column for column in df.columns if column in BASE_COLUMNS_NAME_OZON]
 
         columns_rename = {k: BASE_COLUMNS_NAME_OZON.get(k) for k in columns_name}
@@ -243,3 +238,20 @@ class ConvStocksFboOZONStrategy(ConverterStrategy):
         grouped_df = from_client.groupby(self.ozon_columns.ozon_article).aggregate(
             {self.ozon_columns.in_way_from_client: lambda x: np.sum(x)}).reset_index()
         return grouped_df
+
+class ConvPricesOZONStrategy(ConverterStrategy):
+    def converting(self, data, **kwargs) -> pd.DataFrame:
+        df = pd.DataFrame(data)
+
+        assigned_df = df.assign(price=df['price'].apply(lambda x: x['price']))
+
+        columns_name = [column for column in assigned_df.columns if column in BASE_COLUMNS_NAME_OZON]
+        corrected_df = assigned_df[columns_name].copy()
+
+        columns_rename = {k: BASE_COLUMNS_NAME_OZON.get(k) for k in columns_name}
+
+        corrected_df.rename(columns_rename,
+                            inplace=True,
+                            axis=1)
+        corrected_df = corrected_df[[self.ozon_columns.ozon_id, self.ozon_columns.price_with_seller_discount]]
+        return corrected_df

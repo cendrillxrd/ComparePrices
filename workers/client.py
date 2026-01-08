@@ -56,7 +56,7 @@ class WildberriesAPIClient(Client):
                      retries: int = RETRY_TIMES):
         url = f'{self.base_url[url_key]}{endpoint}'
         logger.info(f'Выполнение запроса по адресу {url}')
-
+        
         for attempt in range(retries):
             self.session.headers.update({'Authorization': self.api_key[api_type]})
             response = self.session.request(method=method,

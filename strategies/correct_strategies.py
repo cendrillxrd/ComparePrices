@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from DTO.columns_dto import WBColumnsDTO
-from DTO.dop_columns import DopColumnsDTO
+from DTO.wb_dop_columns import WBDopColumnsDTO
 from DTO.ozon_columns_dto import OZONColumnsDTO
 from utils.prices_helper import transform_dataframe
 
@@ -12,7 +12,7 @@ from utils.prices_helper import transform_dataframe
 class CorrectorStrategy(ABC):
     def __init__(self):
         self.wb_columns = WBColumnsDTO()
-        self.dop_columns = DopColumnsDTO()
+        self.dop_columns = WBDopColumnsDTO()
         self.ozon_columns = OZONColumnsDTO()
 
     @abstractmethod
@@ -21,15 +21,18 @@ class CorrectorStrategy(ABC):
 
 class CorrExcelStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> list[dict]:
-        columns_to_int = [self.wb_columns.wb_article, self.wb_columns.med_price_without_discount, self.dop_columns.new_discount]
+        df = df[~df[self.dop_columns.new_discount].isna()]
+        df.to_csv('try2.csv', index=False)
+        columns_to_int = [self.wb_columns.wb_article, self.wb_columns.wb_price_without_discount, self.dop_columns.new_discount]
         for column in columns_to_int:
             df[column] = df[column].astype(int)
 
         df.rename({self.wb_columns.wb_article: 'nmID',
                    self.wb_columns.med_price_without_discount: 'price',
                    self.dop_columns.new_discount: 'discount'}, inplace=True, axis=1)
-        final_df = df[['nmID', 'price', 'discount']].to_dict('records')
-        return final_df
+        df.to_csv('try3.csv', index=False)
+        final_dict = df[['nmID', 'price', 'discount']].to_dict('records')
+        return final_dict
 
 class CorrPricesStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -42,6 +45,20 @@ class CorrPricesStrategy(CorrectorStrategy):
             df[col] = pd.to_numeric(df[col], downcast="integer")
 
         df[self.wb_columns.med_discount] = 100 - round((df[self.wb_columns.med_price_with_discount] / df[self.wb_columns.med_price_without_discount]) * 100)
+
+        return df
+
+class CorrPricesOZONStrategy(CorrectorStrategy):
+    def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
+        df.fillna(0, inplace=True)
+
+        columns_name = [self.ozon_columns.med_price_without_discount,
+                        self.ozon_columns.med_price_with_discount]
+
+        for col in columns_name:
+            df[col] = pd.to_numeric(df[col], downcast="integer")
+
+        df[self.ozon_columns.med_discount] = 100 - round((df[self.ozon_columns.med_price_with_discount] / df[self.ozon_columns.med_price_without_discount]) * 100)
 
         return df
 
@@ -62,11 +79,21 @@ class CorrWbPricesStrategy(CorrectorStrategy):
         df[self.wb_columns.wb_discount] = 100 - round((df[self.wb_columns.wb_price_with_wb_discount] / df[self.wb_columns.wb_price_with_seller_discount]) * 100)
         return df
 
-class CorrPurchaseStrategy(CorrectorStrategy):
+class CorrPurchaseOZONStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> pd.DataFrame:
-        # df.drop(columns=[self.columns.ozon_id], axis=1, inplace=True)
-        # df.loc[df[self.columns.purchase].isna() | (df[self.columns.purchase] == 0), self.columns.purchase] = -1
-        pass
+        df[self.ozon_columns.purchase].fillna(0, inplace=True)
+        df[self.ozon_columns.purchase] = pd.to_numeric(df[self.ozon_columns.purchase], downcast="integer")
+        df.loc[df[self.ozon_columns.purchase] == 0, self.ozon_columns.purchase] = -1
+
+        df[self.ozon_columns.equilibrium_discount] = round(100 * (1 - df[self.ozon_columns.med_price_with_discount] /
+                                                                (df[self.ozon_columns.price_without_discount] *
+                                                                 (1 - df[self.ozon_columns.ozon_discount] / 100))))  # высчитываем скидку для равновесия
+        df[self.ozon_columns.equilibrium_discount] = df[self.wb_columns.equilibrium_discount].clip(lower=0)  # если скидка отрицательная, то меняем на 0 (невозможно уравнять)
+        df.loc[df[self.ozon_columns.equilibrium_discount] == 100, self.ozon_columns.equilibrium_discount] = -1  # если скидка 100 %, то меняем на -1 (товара нет на меде)
+        df[self.ozon_columns.price_difference] = df[self.ozon_columns.med_price_with_discount] - df[self.ozon_columns.price_with_ozon_discount]   # подсчет разности цен
+
+        df[self.ozon_columns.equilibrium_price] = round(df[self.ozon_columns.price_without_discount] * (1 - df[self.ozon_columns.equilibrium_discount] / 100)) # высчитываем цену для равновесия
+        df.loc[df[self.ozon_columns.equilibrium_price] > df[self.ozon_columns.price_without_discount], self.ozon_columns.equilibrium_price] = -1 # (товара нет на меде)
         return df
 
 
@@ -88,14 +115,15 @@ class CorrectCardsCollections(CorrectorStrategy):
                                              self.ozon_columns.ozon_article,
                                              self.ozon_columns.seller_article,
                                              self.ozon_columns.name]].dropna().reset_index(drop=True)
-        grouped_df = df_without_unnecessary_columns.groupby(self.ozon_columns.seller_article).aggregate(
-            {self.ozon_columns.ozon_article: 'first', self.ozon_columns.name: 'first'}).reset_index()
-        transformed_df = transform_dataframe(grouped_df, kwargs['col_name'])
+        # grouped_df = df_without_unnecessary_columns.groupby(self.ozon_columns.seller_article).aggregate(
+        #     {self.ozon_columns.ozon_article: 'first', self.ozon_columns.name: 'first'}).reset_index()
+        # transformed_df = transform_dataframe(grouped_df, kwargs['col_name'])
+        transformed_df = transform_dataframe(df_without_unnecessary_columns, kwargs['col_name'])
         return transformed_df
 
 class CorrectArticlePrices(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
-        corrected_df = df[[self.ozon_columns.seller_article, self.ozon_columns.price_with_ozon_discount,
+        corrected_df = df[[self.ozon_columns.ozon_article, self.ozon_columns.price_with_ozon_discount,
                            self.ozon_columns.price_with_ozon_club]]
         corrected_df[self.ozon_columns.price_with_ozon_discount] = pd.to_numeric(
             df[self.ozon_columns.price_with_ozon_discount].str.replace('₽', '', regex=False),
@@ -120,10 +148,21 @@ class CorrectFromClientStrategy(CorrectorStrategy):
 
 class CorrectPricesOZONStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
-        columns_to_update = [self.ozon_columns.price_with_ozon_club, self.ozon_columns.price_with_ozon_discount]
+        df[self.ozon_columns.ozon_discount] = 100 - round(
+            (df[self.ozon_columns.price_with_ozon_discount] / df[self.ozon_columns.price_with_seller_discount]) * 100)
+        columns_to_update = [self.ozon_columns.price_with_ozon_club, self.ozon_columns.price_with_ozon_discount, self.ozon_columns.ozon_discount]
         for col in columns_to_update:
             df[col].fillna(0, inplace=True)
             df[col] = pd.to_numeric(df[col], downcast="integer")
+        # Удаляем строки, где оба столбца равны 0
+        mask = (df[self.ozon_columns.price_with_ozon_discount] == 0)
+        df = df[~mask]
+        return df
+
+class CorrectSellerPricesOZONStrategy(CorrectorStrategy):
+    def correcting(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        df[self.ozon_columns.seller_discount] = 100 - round((df[self.ozon_columns.price_with_seller_discount] / df[self.ozon_columns.price_without_discount]) * 100)
+        df[self.ozon_columns.seller_discount] = pd.to_numeric(df[self.ozon_columns.seller_discount], downcast="integer")
         return df
 
 class CorrectOZONinfo(CorrectorStrategy):

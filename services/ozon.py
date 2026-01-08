@@ -12,9 +12,10 @@ from services.redaction import RedactionService
 from services.yandex_disk import YandexDiskManager
 
 from strategies.convert_strategies import ConvCardsInfoOZONStrategy, ConvOrdersInfoOZONStrategy, \
-    ConvStocksFboOZONStrategy
+    ConvStocksFboOZONStrategy, ConvPricesOZONStrategy
 from strategies.request_strategies import ReqOrdersInfoOZONReportStrategy, ReqCardsInfoOZONReportStrategy, \
-    ReqGetLinkOZONStrategy, ReqGetLinkDataOZONStrategy, ReqStocksFboOZONStrategy
+    ReqGetLinkOZONStrategy, ReqGetLinkDataOZONStrategy, ReqStocksFboOZONStrategy, ReqPricesOZONStrategy
+from utils.prices_helper import transform_dataframe
 from utils.save_helper import save_results
 from workers.client import OzonAPIClient, HttpClient
 from workers.converter import Converter
@@ -106,26 +107,31 @@ class OzonService:
         cards_info = self.http_client.get_data(link=link)
         return cards_info
 
-    def get_prices_info(self, cards_df: pd.DataFrame,
-                        collections_1_df: pd.DataFrame,
-                        collections_2_df: pd.DataFrame) -> pd.DataFrame:
+    def get_prices_info(self, cards_df: pd.DataFrame) -> pd.DataFrame:
         if self.yadisk.is_file_older_than_12_hours():
             cards_df_for_sale = cards_df[cards_df[self.ozon_columns.status] == 'Продается'].copy()
 
-            collections_merged = self.red.merge_collections(collections_1_df, collections_2_df)
+            # collections_merged = self.red.merge_collections(collections_1_df, collections_2_df)
 
-            collections_merged_for_sale = collections_merged[[self.ozon_columns.ozon_id, self.ozon_columns.seller_article]].copy()
+            # collections_merged_for_sale = collections_merged[[self.ozon_columns.ozon_id, self.ozon_columns.seller_article]].copy()
 
             col_name = 'url'
-            articles_for_prices_df = self.red.merge_cards_with_collections(cards_df_for_sale,
-                                                                           collections_merged_for_sale, col_name)
-            articles = articles_for_prices_df[col_name].to_list()
+            # articles_for_prices_df = self.red.merge_cards_with_collections(cards_df_for_sale,
+            #                                                                collections_merged_for_sale, col_name)
+            df_without_unnecessary_columns = cards_df_for_sale[[
+                                                 self.ozon_columns.ozon_article,
+                                                 self.ozon_columns.name]]
+            # grouped_df = df_without_unnecessary_columns.groupby(self.ozon_columns.seller_article).aggregate(
+            #     {self.ozon_columns.ozon_article: 'first', self.ozon_columns.name: 'first'}).reset_index()
+            # transformed_df = transform_dataframe(grouped_df, kwargs['col_name'])
+            transformed_df = transform_dataframe(df_without_unnecessary_columns, col_name)
+            articles = transformed_df[col_name].to_list()
             logger.info(f"Загружено {len(articles)} товаров для обработки")
 
 
             # Парсинг данных
             prices = asyncio.run(self.main_func(articles))
-            prices_info = self.red.merge_articles_with_prices(articles_for_prices_df, prices)
+            prices_info = self.red.merge_articles_with_prices(df_without_unnecessary_columns, prices)
             prices_info.to_csv(MAIN_DIR_PRICES, index=False, encoding='utf-8')
             self.yadisk.save_file_to_folder()
         else:
@@ -148,8 +154,8 @@ class OzonService:
             articles,
             user_agent,
             cookies_dict,
-            batch_size=50,  # Размер батча
-            delay_between_batches=5  # Задержка между батчами
+            batch_size=500,  # Размер батча
+            delay_between_batches=60  # Задержка между батчами
         )
         prices = save_results(results, col_name='url')
         return prices
@@ -159,4 +165,10 @@ class OzonService:
         stocks = self.ozon_api_client.get_data(sku=sku)
         stocks_df = self.converter.convert(stocks)
         return stocks_df
+
+    @with_strategies('api' , ReqPricesOZONStrategy, ConvPricesOZONStrategy)
+    def get_seller_prices(self) -> pd.DataFrame:
+        prices = self.ozon_api_client.get_data()
+        prices_df = self.converter.convert(prices)
+        return prices_df
 

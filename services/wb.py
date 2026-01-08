@@ -8,14 +8,14 @@ from config import TASKS_STATUS
 from logging_config import setup_logging
 from strategies.convert_strategies import (ConvPricesWBStrategy,
                                            ConvPromoGoodsWBStrategy,
-                                           ConvPromoIDStrategy,
-                                           ConvStocksStrategy,
-                                           ConvWbCardsPricesStrategy, ConvExcelStrategy, ConvStatusNewPricesStrategy)
-from strategies.request_strategies import (ReqStocksStrategy,
+                                           ConvPromoIDWBStrategy,
+                                           ConvStocksWBStrategy,
+                                           ConvWbCardsPricesStrategy, ConvExcelStrategy, ConvStatusNewPricesWBStrategy)
+from strategies.request_strategies import (ReqStocksWBStrategy,
                                            ReqWBAPIPricesStrategy,
                                            ReqWBAPIPromotionsGoodsStrategy,
                                            ReqWBAPIPromotionsStrategy,
-                                           ReqWbCardsPricesStrategy, ReqWBNewPricesStrategy, ReqStatusNewPricesStrategy)
+                                           ReqWbCardsPricesStrategy, ReqWBNewPricesStrategy, ReqStatusNewPricesWBStrategy)
 from workers.client import WildberriesAPIClient, WildberriesHttpClient
 from workers.converter import Converter
 
@@ -55,23 +55,37 @@ class WBService:
             return None
 
     def create_task_for_change_prices(self, data: list[dict]):
-        task_id = self.update_prices(data)
-        time.sleep(30)
-        status_data_df = self.check_status_tasks(task_id)
-        status_data_df.to_csv(f'{TASKS_STATUS}.csv', index=False)
+        batch_size = 1000
+        all_status_dfs = []
+
+        for i in range(0, len(data), batch_size):
+            batch = data[i:i + batch_size]
+            print(f"Обработка батча {i // batch_size + 1}/{(len(data) - 1) // batch_size + 1}")
+
+            task_id = self.update_prices(batch)
+            time.sleep(30)
+            status_data_df = self.check_status_tasks(task_id)
+            all_status_dfs.append(status_data_df)
+
+        # Объединяем все результаты
+        if all_status_dfs:
+            final_status_df = pd.concat(all_status_dfs, ignore_index=True)
+            final_status_df.to_csv(f'{TASKS_STATUS}.csv', index=False)
+        else:
+            print("Нет данных для обработки")
 
     @with_strategies(wb_strategy_cls=ReqWBNewPricesStrategy, type='api')
     def update_prices(self, data: list[dict]) -> int:
         task_id = self.wb_api_client.get_data(data=data)
         return task_id
 
-    @with_strategies(wb_strategy_cls=ReqStatusNewPricesStrategy,converter_strategy_cls=ConvStatusNewPricesStrategy, type='api')
+    @with_strategies(wb_strategy_cls=ReqStatusNewPricesWBStrategy, converter_strategy_cls=ConvStatusNewPricesWBStrategy, type='api')
     def check_status_tasks(self, upload_id: int):
         status_data = self.wb_api_client.get_data(uploadID=upload_id)
         status_data_df = self.converter.convert(status_data)
         return status_data_df
 
-    @with_strategies(ReqWBAPIPromotionsStrategy, ConvPromoIDStrategy, 'api')
+    @with_strategies(ReqWBAPIPromotionsStrategy, ConvPromoIDWBStrategy, 'api')
     def get_wb_promo_ids(self) -> list:
         logger.info('Получение данных об акциях')
         promotions = self.wb_api_client.get_data()
@@ -94,7 +108,7 @@ class WBService:
         prices_df = self.converter.convert(prices_json)
         return prices_df
 
-    @with_strategies(ReqStocksStrategy, ConvStocksStrategy, 'api')
+    @with_strategies(ReqStocksWBStrategy, ConvStocksWBStrategy, 'api')
     def get_wb_stocks(self, stock_type=Literal['wb', 'mp']) -> Union[pd.DataFrame, None]:
         logger.info('Получение данных об остатках')
         stocks_json = self.wb_api_client.get_data(stock_type=stock_type)

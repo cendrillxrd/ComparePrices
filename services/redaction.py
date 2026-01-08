@@ -8,10 +8,11 @@ from strategies.correct_strategies import (CorrCollectionsStrategy,
                                            CorrPricesStrategy,
                                            CorrPromoStrategy,
                                            CorrStocksStrategy,
-                                           CorrWbPricesStrategy, CorrPurchaseStrategy, CorrExcelStrategy,
+                                           CorrWbPricesStrategy, CorrPurchaseOZONStrategy, CorrExcelStrategy,
                                            CorrectCardsCollections, CorrectArticlePrices, CorrectOZONinfo,
                                            CorrectToClientStrategy, CorrectFromClientStrategy,
-                                           CorrectPricesOZONStrategy)
+                                           CorrectPricesOZONStrategy, CorrectSellerPricesOZONStrategy,
+                                           CorrPricesOZONStrategy)
 from strategies.merge_strategies import (MergeCollectionsStrategy,
                                          MergePricesStrategy,
                                          MergePromoStrategy,
@@ -19,7 +20,7 @@ from strategies.merge_strategies import (MergeCollectionsStrategy,
                                          MergeWbCollectionsStrategy,
                                          MergeWbPricesStrategy, MergePurchaseStrategy, MergeCardsCollections,
                                          MergeArticlePrices, MergeOZONWithCollectionsStrategy, MergeToClientStrategy,
-                                         MergeFromClientStrategy)
+                                         MergeFromClientStrategy, MergeSellerPricesStrategy, MergePricesOZONStrategy)
 from workers.corrector import Corrector
 from workers.merger import Merger
 
@@ -61,7 +62,14 @@ class RedactionService:
 
     @with_strategies(MergePricesStrategy, CorrPricesStrategy)
     def merge_with_med_prices(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
-        logger.info('Обработка данных по ценам WB и MED')
+        logger.info('Обработка данных по ценам MED')
+        prices_merged = self.merger.merge(wb_df, med_df)
+        prices_corrected = self.corrector.correct(prices_merged)
+        return prices_corrected
+
+    @with_strategies(MergePricesStrategy, CorrPricesOZONStrategy)
+    def merge_with_med_prices_ozon(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка данных по ценам MED')
         prices_merged = self.merger.merge(wb_df, med_df)
         prices_corrected = self.corrector.correct(prices_merged)
         return prices_corrected
@@ -115,13 +123,19 @@ class RedactionService:
     def merge_with_from_client(self, main_df: pd.DataFrame, from_client_df: pd.DataFrame) -> pd.DataFrame:
         from_client_merged = self.merger.merge(main_df, from_client_df)
         corrected_df = self.corrector.correct(from_client_merged)
-        corrected_df.to_csv('from_client_merged.csv', index=False, encoding='utf-8')
         return corrected_df
 
-    @with_strategies(merge_strategy_cls=MergePricesStrategy, correcter_strategy_cls=CorrectPricesOZONStrategy)
+    @with_strategies(merge_strategy_cls=MergePricesOZONStrategy, correcter_strategy_cls=CorrectPricesOZONStrategy)
     def merge_with_prices(self, main_df: pd.DataFrame, prices_df: pd.DataFrame) -> pd.DataFrame:
         merged_df = self.merger.merge(main_df, prices_df)
-        return merged_df
+        corrected_df = self.corrector.correct(merged_df)
+        return corrected_df
+
+    @with_strategies(merge_strategy_cls=MergeSellerPricesStrategy, correcter_strategy_cls=CorrectSellerPricesOZONStrategy)
+    def merge_with_seller_prices(self, main_df: pd.DataFrame, prices_df: pd.DataFrame) -> pd.DataFrame:
+        merged_df = self.merger.merge(main_df, prices_df)
+        corrected_df = self.corrector.correct(merged_df)
+        return corrected_df
 
     @with_strategies(MergeCollectionsStrategy)
     def merge_collections(self, wb_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:
@@ -134,5 +148,12 @@ class RedactionService:
         logger.info('Обработка закупки')
         purchase_merged = self.merger.merge(collections_df, purchase_df)
         return purchase_merged
+
+    @with_strategies(merge_strategy_cls=MergePurchaseStrategy, correcter_strategy_cls=CorrPurchaseOZONStrategy)
+    def merge_with_ozon_purchase(self, collections_df: pd.DataFrame, purchase_df: pd.DataFrame) -> pd.DataFrame:
+        logger.info('Обработка закупки')
+        purchase_merged = self.merger.merge(collections_df, purchase_df)
+        corrected_df = self.corrector.correct(purchase_merged)
+        return corrected_df
 
 
