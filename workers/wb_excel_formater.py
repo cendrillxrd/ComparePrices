@@ -39,7 +39,7 @@ class WBExcelFormatter:
         self._make_headers_bold(ws)
         self._fill_formulas(ws, col_letters)
         self._add_dropdown_list(ws, col_letters)
-        self._apply_percentage_format(ws, col_letters)
+        # self._apply_percentage_format(ws, col_letters)
         self._apply_conditional_formatting(ws, col_letters)
         self._auto_fit_columns(ws)
         self.work_book.save(f"{WB_EXCEL_FILE_NAME}.xlsx")
@@ -54,7 +54,8 @@ class WBExcelFormatter:
     def _write_dataframe(self, ws):
         # Переупорядочиваем колонки, чтобы выпадающий список был между РРЦ и Остаток FBS
         for col in self.df.columns:
-            if col not in (self.new_columns_dto.solution, self.new_columns_dto.new_discount):
+            if col not in (self.new_columns_dto.solution, self.new_columns_dto.new_discount,
+                           self.new_columns_dto.price_with_new_seller_discount, self.new_columns_dto.price_with_new_seller_discount_and_wb_discount):
                 if col == self.main_columns_dto.wb_price_without_discount:  # Перед РРЦ
                     # Добавляем колонку с выпадающим списком
                     self.actual_columns.append(self.new_columns_dto.solution)
@@ -62,6 +63,8 @@ class WBExcelFormatter:
                 if col == self.main_columns_dto.seller_discount:  # После скидки продавца
                     # Добавляем колонку с новой скидкой
                     self.actual_columns.append(self.new_columns_dto.new_discount)
+                    self.actual_columns.append(self.new_columns_dto.price_with_new_seller_discount)
+                    self.actual_columns.append(self.new_columns_dto.price_with_new_seller_discount_and_wb_discount)
 
         # Переупорядочиваем датафрейм
         ordered_df = self.df.reindex(columns=self.actual_columns)
@@ -107,38 +110,59 @@ class WBExcelFormatter:
                     cell.style = "percentage_integer_style"
 
     def _formula_mu_original(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_without_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"=ROUND(({columns[self.main_columns_dto.wb_price_without_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1) * 100,0)"
         return formula
 
     def _formula_mu_with_our_discount(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"=ROUND(({columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1) * 100,0)"
         return formula
 
     def _formula_mu_with_discount_from_the_price_with_spp(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.wb_price_with_wb_club]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"=ROUND(({columns[self.main_columns_dto.wb_price_with_wb_club]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1) * 100,0)"
         return formula
 
     def _formula_mu_taking_into_account_the_wb_commission(self, columns, row):
-        formula = (f"=({columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} - {columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} *"
-                   f" {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.purchase]}{row} - 1")
+        formula = (
+            f"=ROUND((({columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} - {columns[self.main_columns_dto.wb_price_with_seller_discount]}{row} *"
+            f" ({columns[self.new_columns_dto.mp_commission]}{row} / 100)) / {columns[self.main_columns_dto.purchase]}{row} - 1) * 100,0)")
         return formula
 
     def _formula_max_discount_including_commission(self, columns, row):
-        formula = f"=1 - {columns[self.main_columns_dto.purchase]}{row} / (1 - {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.wb_price_without_discount]}{row}"
+        formula = f"=ROUND(((1 - {columns[self.main_columns_dto.purchase]}{row} / (1 - ({columns[self.new_columns_dto.mp_commission]}{row} / 100)) / {columns[self.main_columns_dto.wb_price_without_discount]}{row}) * 100),0)"
+        return formula
+
+    def _formula_new_price_with_our_discount(self, columns, row):
+        formula = f"={columns[self.main_columns_dto.wb_price_without_discount]}{row} * (1 - {columns[self.new_columns_dto.new_discount]}{row} / 100)"
+        return formula
+
+    def _formula_new_price_with_our_discount_and_wb_discount(self, columns, row):
+        formula = f"={columns[self.new_columns_dto.price_with_new_seller_discount]}{row} * (1 - {columns[self.main_columns_dto.wb_discount]}{row} / 100)"
+        return formula
+
+    def _formula_recommended_discount(self, columns, row):
+        formula = (
+            f"=IF({columns[self.main_columns_dto.equilibrium_discount]}{row} < {columns[self.new_columns_dto.max_discount_including_commission]}{row},"
+            f"{columns[self.main_columns_dto.equilibrium_discount]}{row},"
+            f"{columns[self.new_columns_dto.max_discount_including_commission]}{row})")
         return formula
 
     def _fill_formulas(self, ws, cols):
         for row in range(2, len(self.df) + 2):
+            ws[f"{cols[self.new_columns_dto.price_with_new_seller_discount]}{row}"] = self._formula_new_price_with_our_discount(cols, row)
+            ws[f"{cols[self.new_columns_dto.price_with_new_seller_discount_and_wb_discount]}{row}"] = self._formula_new_price_with_our_discount_and_wb_discount(cols, row)
             ws[f"{cols[self.new_columns_dto.mp_commission]}{row}"] = BASE_MP_COMMISSION
             ws[f"{cols[self.new_columns_dto.mu_original]}{row}"] = self._formula_mu_original(cols, row)
             ws[f"{cols[self.new_columns_dto.mu_with_our_discount]}{row}"] = self._formula_mu_with_our_discount(cols,row)
             ws[f"{cols[self.new_columns_dto.mu_with_discount_from_the_price_with_spp]}{row}"] = self._formula_mu_with_discount_from_the_price_with_spp(cols, row)
             ws[f"{cols[self.new_columns_dto.mu_taking_into_account_the_wb_commission]}{row}"] = self._formula_mu_taking_into_account_the_wb_commission(cols, row)
             ws[f"{cols[self.new_columns_dto.max_discount_including_commission]}{row}"] = self._formula_max_discount_including_commission(cols, row)
+            ws[f"{cols[self.new_columns_dto.recommended_discount]}{row}"] = self._formula_recommended_discount(cols, row)
 
             ws[f"{cols[self.main_columns_dto.wb_discount]}{row}"].fill = pink_fill
             ws[f"{cols[self.main_columns_dto.seller_discount]}{row}"].fill = green_fill
             ws[f"{cols[self.new_columns_dto.new_discount]}{row}"].fill = yellow_fill
+            ws[f"{cols[self.new_columns_dto.price_with_new_seller_discount]}{row}"].fill = yellow_fill
+            ws[f"{cols[self.new_columns_dto.price_with_new_seller_discount_and_wb_discount]}{row}"].fill = yellow_fill
 
             columns_for_blue = [self.main_columns_dto.wb_price_with_wb_discount,
                                 self.main_columns_dto.med_price_with_discount,]

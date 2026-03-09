@@ -16,5 +16,7 @@ class InfoOZONDTO:
     cards_info: Optional[pd.DataFrame] = None
     collections_first: Optional[pd.DataFrame] = None
     collections_second: Optional[pd.DataFrame] = None
+    collections_third: Optional[pd.DataFrame] = None
+    collections_fourth: Optional[pd.DataFrame] = None
     purchase: Optional[pd.DataFrame] = None
     seller_prices: Optional[pd.DataFrame] = None

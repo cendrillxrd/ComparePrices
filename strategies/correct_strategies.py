@@ -88,12 +88,13 @@ class CorrPurchaseOZONStrategy(CorrectorStrategy):
         df[self.ozon_columns.equilibrium_discount] = round(100 * (1 - df[self.ozon_columns.med_price_with_discount] /
                                                                 (df[self.ozon_columns.price_without_discount] *
                                                                  (1 - df[self.ozon_columns.ozon_discount] / 100))))  # высчитываем скидку для равновесия
-        df[self.ozon_columns.equilibrium_discount] = df[self.wb_columns.equilibrium_discount].clip(lower=0)  # если скидка отрицательная, то меняем на 0 (невозможно уравнять)
+        # df[self.ozon_columns.equilibrium_discount] = df[self.wb_columns.equilibrium_discount].clip(lower=0)  # если скидка отрицательная, то меняем на 0 (невозможно уравнять)
         df.loc[df[self.ozon_columns.equilibrium_discount] == 100, self.ozon_columns.equilibrium_discount] = -1  # если скидка 100 %, то меняем на -1 (товара нет на меде)
         df[self.ozon_columns.price_difference] = df[self.ozon_columns.med_price_with_discount] - df[self.ozon_columns.price_with_ozon_discount]   # подсчет разности цен
 
         df[self.ozon_columns.equilibrium_price] = round(df[self.ozon_columns.price_without_discount] * (1 - df[self.ozon_columns.equilibrium_discount] / 100)) # высчитываем цену для равновесия
-        df.loc[df[self.ozon_columns.equilibrium_price] > df[self.ozon_columns.price_without_discount], self.ozon_columns.equilibrium_price] = -1 # (товара нет на меде)
+        # df.loc[(df[self.ozon_columns.equilibrium_price] > df[self.ozon_columns.price_without_discount]), self.ozon_columns.equilibrium_price] = -1 # (товара нет на меде)
+        df.loc[df[self.ozon_columns.equilibrium_discount] == -1, self.ozon_columns.equilibrium_price] = -1
         return df
 
 

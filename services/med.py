@@ -8,7 +8,8 @@ from strategies.convert_strategies import (ConvCollectionsMEDStrategy,
                                            ConvPricesMEDStrategy, ConvPurchaseMEDStrategy)
 from strategies.request_strategies import (ReqCollectionsFirstMEDStrategy,
                                            ReqCollectionsSecondMEDStrategy,
-                                           ReqPricesMEDStrategy, ReqPurchaseMEDStrategy)
+                                           ReqPricesMEDStrategy, ReqPurchaseMEDStrategy, ReqMEDCollectionsThird,
+                                           ReqMEDCollectionsFourth)
 from workers.client import MedClient
 from workers.converter import Converter
 
@@ -50,6 +51,20 @@ class MEDService:
     @with_strategies(ReqCollectionsSecondMEDStrategy, ConvCollectionsMEDStrategy)
     def get_med_collections_second(self, type: str = Literal['ozon', 'wb']) -> pd.DataFrame:
         logger.info('Получение данных о коллекциях второй ссылки')
+        med_collections_csv = self.med.get_data()
+        med_collections_df = self.converter.convert(med_collections_csv, type=type)
+        return med_collections_df
+
+    @with_strategies(ReqMEDCollectionsThird, ConvCollectionsMEDStrategy)
+    def get_med_collections_third(self, type: str = Literal['ozon', 'wb']) -> pd.DataFrame:
+        logger.info('Получение данных о коллекциях третьей ссылки')
+        med_collections_csv = self.med.get_data()
+        med_collections_df = self.converter.convert(med_collections_csv, type=type)
+        return med_collections_df
+
+    @with_strategies(ReqMEDCollectionsFourth, ConvCollectionsMEDStrategy)
+    def get_med_collections_fourth(self, type: str = Literal['ozon', 'wb']) -> pd.DataFrame:
+        logger.info('Получение данных о коллекциях четвертой ссылки')
         med_collections_csv = self.med.get_data()
         med_collections_df = self.converter.convert(med_collections_csv, type=type)
         return med_collections_df

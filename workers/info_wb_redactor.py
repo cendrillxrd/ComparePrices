@@ -13,7 +13,9 @@ class InfoWBRedactor:
     def redact_info(self, info: InfoWBDTO) -> pd.DataFrame:
         wb_prices_merged = self.red.merge_wb_prices(info.wb_cards_prices, info.wb_prices)
         wb_collections_merged = self.red.merge_collections(info.med_collection_1, info.med_collection_2)
-        purchase_merged = self.red.merge_with_purchase(wb_collections_merged, info.purchase)
+        wb_collections_merged_2 = self.red.merge_collections(wb_collections_merged, info.med_collection_3)
+        wb_collections_merged_3 = self.red.merge_collections(wb_collections_merged_2, info.med_collection_4)
+        purchase_merged = self.red.merge_with_purchase(wb_collections_merged_3, info.purchase)
         operations = [
             (self.red.merge_with_med_prices, info.med_prices),
             (self.red.merge_with_med_collections, purchase_merged),

@@ -20,8 +20,6 @@ class InfoOZONCollector:
         cards_info = self.ozon.get_cards_info()
         prices = self.ozon.get_prices_info(cards_info)
 
-
-
         seller_prices = self.ozon.get_seller_prices()
         med_prices = self.med.get_med_prices()
 
@@ -29,6 +27,8 @@ class InfoOZONCollector:
 
         collections_first = self.med.get_med_collections_first()
         collections_second = self.med.get_med_collections_second()
+        collections_third = self.med.get_med_collections_third()
+        collections_fourth = self.med.get_med_collections_fourth()
 
         # cards_info = self.ozon.get_cards_info()
 
@@ -43,6 +43,8 @@ class InfoOZONCollector:
             cards_info=cards_info,
             collections_first=collections_first,
             collections_second=collections_second,
+            collections_third=collections_third,
+            collections_fourth=collections_fourth,
             prices=prices,
             to_client=to_client,
             from_client=from_client_fbo,

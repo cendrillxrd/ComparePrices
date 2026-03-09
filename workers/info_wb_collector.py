@@ -20,6 +20,8 @@ class InfoWBCollector:
         med_prices = self.med.get_med_prices()
         med_collection_1 = self.med.get_med_collections_first(type='wb')
         med_collection_2 = self.med.get_med_collections_second(type='wb')
+        med_collection_3 = self.med.get_med_collections_third(type='wb')
+        med_collection_4 = self.med.get_med_collections_fourth(type='wb')
         wb_promotions = self.wb.get_wb_promotions_plan_discounts()
         wb_fbs_stocks = self.wb.get_wb_stocks('mp')
         wb_fbw_stocks = self.wb.get_wb_stocks('wb')
@@ -31,6 +33,8 @@ class InfoWBCollector:
             med_prices=med_prices,
             med_collection_1=med_collection_1,
             med_collection_2=med_collection_2,
+            med_collection_3=med_collection_3,
+            med_collection_4=med_collection_4,
             wb_promotions=wb_promotions,
             wb_fbs_stocks=wb_fbs_stocks,
             wb_fbw_stocks=wb_fbw_stocks,

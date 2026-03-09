@@ -11,6 +11,8 @@ class InfoWBDTO:
     wb_cards_prices: Optional[pd.DataFrame] = None
     med_collection_1: Optional[pd.DataFrame] = None
     med_collection_2: Optional[pd.DataFrame] = None
+    med_collection_3: Optional[pd.DataFrame] = None
+    med_collection_4: Optional[pd.DataFrame] = None
     wb_promotions: Optional[pd.DataFrame] = None
     wb_fbs_stocks: Optional[pd.DataFrame] = None
     wb_fbw_stocks: Optional[pd.DataFrame] = None

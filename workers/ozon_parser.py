@@ -7,8 +7,11 @@ from bs4 import BeautifulSoup
 import undetected_chromedriver as uc
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 import random
+import chromedriver_autoinstaller
 
 from utils.prices_helper import clean_price
 from logging_config import setup_logging
@@ -37,7 +40,7 @@ class OzonPriceParser:
         soup = BeautifulSoup(html_content, 'html.parser')
 
         tsHeadline600Large = soup.find(class_="tsHeadline600Large")
-        pdp_b7f_tsHeadline500Medium = soup.find(class_="pdp_bg4 tsHeadline500Medium")
+        pdp_b7f_tsHeadline500Medium = soup.find(class_="pdp_b1i tsHeadline500Medium")
 
         value1 = clean_price(tsHeadline600Large.get_text(strip=True)) if tsHeadline600Large else "Не найдено"
         value2 = clean_price(
@@ -46,17 +49,46 @@ class OzonPriceParser:
         return value1, value2
     @staticmethod
     def get_cookies():
-        """Получение cookies с рандомизированными задержками"""
-        with uc.Chrome(service=ChromeService(ChromeDriverManager().install())) as driver:
+
+        driver_path = ChromeDriverManager().install()
+        service = Service(driver_path)
+
+        options = Options()
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+
+        driver = webdriver.Chrome(service=service, options=options)
+
+        try:
             driver.implicitly_wait(60)
             driver.get("https://www.ozon.ru")
-            time.sleep(random.uniform(2, 5))  # Случайная задержка
+            time.sleep(random.uniform(2, 5))
             driver.find_element(By.CSS_SELECTOR, "#stickyHeader")
             user_agent = driver.execute_script("return navigator.userAgent")
             cookies = driver.get_cookies()
 
-        cookies_dict = {i["name"]: i["value"] for i in cookies}
-        return user_agent, cookies_dict
+            cookies_dict = {i["name"]: i["value"] for i in cookies}
+            return user_agent, cookies_dict
+        finally:
+            driver.quit()
+    # @staticmethod
+    # def get_cookies():
+    #     chromedriver_autoinstaller.install()
+    #     options = uc.ChromeOptions()
+    #     options.add_argument('--disable-blink-features=AutomationControlled')
+    #     """Получение cookies с рандомизированными задержками"""
+    #     with uc.Chrome(options=options, use_subprocess=True, version_main=None) as driver:
+    #         driver.implicitly_wait(60)
+    #         driver.get("https://www.ozon.ru")
+    #         time.sleep(random.uniform(2, 5))  # Случайная задержка
+    #         driver.find_element(By.CSS_SELECTOR, "#stickyHeader")
+    #         user_agent = driver.execute_script("return navigator.userAgent")
+    #         cookies = driver.get_cookies()
+    #
+    #     cookies_dict = {i["name"]: i["value"] for i in cookies}
+    #     return user_agent, cookies_dict
 
     async def process_batch(self, articles, user_agent, cookies_dict, batch_size=10, delay_between_batches=5):
         """Обработка батчами с задержками"""

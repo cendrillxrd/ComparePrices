@@ -15,11 +15,13 @@ class InfoOZONRedactor:
 
     def redact_info(self, info: InfoOZONDTO) -> dict:
         ozon_collections_merged = self.red.merge_collections(info.collections_first, info.collections_second)
+        ozon_collections_merged_2 = self.red.merge_collections(ozon_collections_merged, info.collections_third)
+        ozon_collections_merged_3 = self.red.merge_collections(ozon_collections_merged_2, info.collections_fourth)
 
         operations = [
             (self.red.merge_with_to_client, info.to_client),
             (self.red.merge_with_from_client, info.from_client),
-            (self.red.merge_with_med_collections_ozon, ozon_collections_merged),
+            (self.red.merge_with_med_collections_ozon, ozon_collections_merged_3),
             (self.red.merge_with_med_prices_ozon, info.med_prices),
             (self.red.merge_with_seller_prices, info.seller_prices),
             (self.red.merge_with_prices, info.prices),

@@ -248,6 +248,20 @@ class ReqCollectionsSecondMEDStrategy(RequestStrategy):
         response = client.make_request(url_key=self.url_key)
         return response
 
+class ReqMEDCollectionsThird(RequestStrategy):
+    url_key = "med_collections_3"
+
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        response = client.make_request(url_key=self.url_key)
+        return response
+
+class ReqMEDCollectionsFourth(RequestStrategy):
+    url_key = "med_collections_4"
+
+    def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+        response = client.make_request(url_key=self.url_key)
+        return response
+
 class ReqPurchaseMEDStrategy(RequestStrategy):
     url_key = "med_purchase"
     login = PURCHASE_LOGIN

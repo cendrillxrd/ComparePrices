@@ -103,7 +103,7 @@ class WildberriesHttpClient(Client):
 
         url = f'https://www.wildberries.ru/__internal/u-catalog/sellers/v4/catalog?ab_testing=false&ab_testing=false&appType=1&curr=rub&dest=12358062&hide_dtype=11&inheritFilters=false&lang=ru&page={page}&sort=popular&spp=30&supplier=859504'
         driver.get(url)
-        time.sleep(3)
+        time.sleep(5)
         full_text = driver.find_element(By.TAG_NAME, "body").text
         data = json.loads(full_text)
         driver.quit()

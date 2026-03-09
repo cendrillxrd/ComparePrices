@@ -28,10 +28,12 @@ BASE_URLS = {
     'dp-calendar': 'https://dp-calendar-api.wildberries.ru',
     'discounts-prices': 'https://discounts-prices-api.wildberries.ru',
     'seller-analytics': 'https://seller-analytics-api.wildberries.ru',
-    'med_prices': 'https://med-online.ru/upload/acrit.exportproplus/file.prices.csv?1755164681',
+    'med_prices': 'https://med-online.ru/upload/acrit.exportproplus/file.prices.csv?1769758965',
     'wb_http': 'https://catalog.wb.ru/sellers/v4/catalog',
     'med_collections_1': 'https://med-online.ru/upload/acrit.exportproplus/file.OZON.xlsx?1740656479',
     'med_collections_2': 'https://med-online.ru/upload/acrit.exportproplus/file.OZONdop.xlsx?1744707024',
+    'med_collections_3': 'https://med-online.ru/upload/acrit.exportproplus/file.match-bikk.xlsx?1769676747',
+    'med_collections_4': 'https://med-online.ru/upload/acrit.exportproplus/file.Strell-Truss-Redp.xlsx?1772624157',
     'med_purchase': 'https://med-online.ru/upload/1cdata/cost.csv',
     'http': '',
     'ozon': 'https://api-seller.ozon.ru',
@@ -97,7 +99,8 @@ TIME_SLEEP_PRICE = 1  # >= 0.6
 TIME_SLEEP_STOCKS = 20  # >= 20
 TIME_SLEEP_NEW_PRICE_TASK = 1 # >= 0.6
 
-BASE_MP_COMMISSION = 0.55
+# BASE_MP_COMMISSION = 0.55
+BASE_MP_COMMISSION = 55
 
 DELAY_INTERVAL=10
 

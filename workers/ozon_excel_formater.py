@@ -40,8 +40,7 @@ class OZONExcelFormatter:
         col_letters = self._map_columns()
         self._make_headers_bold(ws)
         self._fill_formulas(ws, col_letters)
-        self._add_dropdown_list(ws, col_letters)
-        self._apply_percentage_format(ws, col_letters)
+        # self._apply_percentage_format(ws, col_letters)
         self._apply_conditional_formatting(ws, col_letters)
         self._auto_fit_columns(ws)
         self.work_book.save(f"{OZON_EXCEL_FILE_NAME}.xlsx")
@@ -56,10 +55,7 @@ class OZONExcelFormatter:
     def _write_dataframe(self, ws):
         # Переупорядочиваем колонки, чтобы выпадающий список был между РРЦ и Остаток FBS
         for col in self.df.columns:
-            if col not in (self.new_columns_dto.solution, self.new_columns_dto.new_price):
-                if col == self.main_columns_dto.price_without_discount:  # Перед РРЦ
-                    # Добавляем колонку с выпадающим списком
-                    self.actual_columns.append(self.new_columns_dto.solution)
+            if col != self.new_columns_dto.new_price:
                 self.actual_columns.append(col)
                 if col == self.main_columns_dto.seller_discount:  # После скидки продавца
                     # Добавляем колонку с новой ценой
@@ -109,24 +105,31 @@ class OZONExcelFormatter:
                     cell.style = "percentage_integer_style"
 
     def _formula_mu_original(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.price_without_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"=ROUND(({columns[self.main_columns_dto.price_without_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1) * 100,0)"
         return formula
 
     def _formula_mu_with_our_discount(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.price_with_seller_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"=ROUND(({columns[self.main_columns_dto.price_with_seller_discount]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1) * 100,0)"
         return formula
 
     def _formula_mu_with_discount_from_the_price_with_spp(self, columns, row):
-        formula = f"={columns[self.main_columns_dto.price_with_ozon_club]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1"
+        formula = f"=ROUND(({columns[self.main_columns_dto.price_with_ozon_club]}{row} / {columns[self.main_columns_dto.purchase]}{row} - 1) * 100,0)"
         return formula
 
     def _formula_mu_taking_into_account_the_wb_commission(self, columns, row):
-        formula = (f"=({columns[self.main_columns_dto.price_with_seller_discount]}{row} - {columns[self.main_columns_dto.price_with_seller_discount]}{row} *"
-                   f" {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.purchase]}{row} - 1")
+        formula = (f"=ROUND((({columns[self.main_columns_dto.price_with_seller_discount]}{row} - {columns[self.main_columns_dto.price_with_seller_discount]}{row} *"
+                   f" {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.purchase]}{row} - 1) * 100,0)")
         return formula
 
     def _formula_max_discount_including_commission(self, columns, row):
-        formula = f"=1 - {columns[self.main_columns_dto.purchase]}{row} / (1 - {columns[self.new_columns_dto.mp_commission]}{row}) / {columns[self.main_columns_dto.price_without_discount]}{row}"
+        formula = f"=ROUND(((1 - {columns[self.main_columns_dto.purchase]}{row} / (1 - ({columns[self.new_columns_dto.mp_commission]}{row} / 100)) / {columns[self.main_columns_dto.price_without_discount]}{row}) * 100),0)"
+        return formula
+
+    def _formula_recommended_discount(self, columns, row):
+        formula = (
+            f"=IF({columns[self.main_columns_dto.equilibrium_discount]}{row} < {columns[self.new_columns_dto.max_discount_including_commission]}{row},"
+            f"{columns[self.main_columns_dto.equilibrium_discount]}{row},"
+            f"{columns[self.new_columns_dto.max_discount_including_commission]}{row})")
         return formula
 
     def _fill_formulas(self, ws, cols):
@@ -137,6 +140,7 @@ class OZONExcelFormatter:
             ws[f"{cols[self.new_columns_dto.mu_with_discount_from_the_price_with_spp]}{row}"] = self._formula_mu_with_discount_from_the_price_with_spp(cols, row)
             ws[f"{cols[self.new_columns_dto.mu_taking_into_account_the_wb_commission]}{row}"] = self._formula_mu_taking_into_account_the_wb_commission(cols, row)
             ws[f"{cols[self.new_columns_dto.max_discount_including_commission]}{row}"] = self._formula_max_discount_including_commission(cols, row)
+            ws[f"{cols[self.new_columns_dto.recommended_discount]}{row}"] = self._formula_recommended_discount(cols, row)
 
             ws[f"{cols[self.main_columns_dto.ozon_discount]}{row}"].fill = ozon_color_fill
             ws[f"{cols[self.main_columns_dto.seller_discount]}{row}"].fill = green_fill
@@ -147,25 +151,6 @@ class OZONExcelFormatter:
                                 self.main_columns_dto.med_price_with_discount,]
             for col_name in columns_for_blue:
                 ws[f"{cols[col_name]}{row}"].fill = blue_fill
-
-    def _add_dropdown_list(self, ws, cols):
-        """Добавляет выпадающий список в указанную колонку"""
-        if self.new_columns_dto.solution not in cols:
-            return
-
-        dropdown_col = cols[self.new_columns_dto.solution]
-
-        # Создаем валидацию данных для выпадающего списка
-        dv = DataValidation(
-            type="list",
-            formula1='"переоценка по МЕД,подсортировка,оставляем и продвигаем,возвращаем на склад,продаем с доп скидкой ВБ,увеличиваем скидку,нет остатка обнулить скидку"',
-            allow_blank=True,
-            showErrorMessage=True
-        )
-
-        # Применяем к колонке (со 2-й строки до конца данных)
-        dv.add(f"{dropdown_col}2:{dropdown_col}{len(self.df) + 1}")
-        ws.add_data_validation(dv)
 
     def _apply_conditional_formatting(self, ws, cols):
         last_row = len(self.df) + 2
