@@ -14,3 +14,4 @@ class WBDopColumnsDTO:
     mu_taking_into_account_the_wb_commission: str = 'MU с учетом комиссии ВБ (от нашей цены)'
     max_discount_including_commission: str = 'Макс скидка с учетом комиссии'
     recommended_discount: str = 'Рекомендованная скидка'
+    diff_price: str = 'РАЗНИЦА ЦЕН'

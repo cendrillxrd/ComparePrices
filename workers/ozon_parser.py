@@ -40,7 +40,7 @@ class OzonPriceParser:
         soup = BeautifulSoup(html_content, 'html.parser')
 
         tsHeadline600Large = soup.find(class_="tsHeadline600Large")
-        pdp_b7f_tsHeadline500Medium = soup.find(class_="pdp_b1i tsHeadline500Medium")
+        pdp_b7f_tsHeadline500Medium = soup.find(class_="pdp_bi2 tsHeadline500Medium")
 
         value1 = clean_price(tsHeadline600Large.get_text(strip=True)) if tsHeadline600Large else "Не найдено"
         value2 = clean_price(

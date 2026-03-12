@@ -39,6 +39,8 @@ BASE_URLS = {
     'ozon': 'https://api-seller.ozon.ru',
 }
 
+MAIN_OZON_BRANDS = ['LTB', 'Armani Exchange', 'Bikkembergs']
+
 BASE_COLUMNS_NAME_WB = {'nmID': wb_columns.wb_article,
                      'vendorCode': wb_columns.seller_article,
                      'Артикул': wb_columns.seller_article,
@@ -164,7 +166,7 @@ LIMIT_FUNNEL = 1000
 TIME_SLEEP_FUNNEL = 60
 TIME_SLEEP_REPORT = 60
 TIME_SLEEP_CARDS_LINK = 30
-TIME_SLEEP_STOCKS_FBS = 0.5
+TIME_SLEEP_STOCKS_FBS = 1
 TIME_SLEEP_PRICES = 1
 
 

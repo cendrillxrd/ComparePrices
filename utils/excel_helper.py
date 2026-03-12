@@ -7,21 +7,21 @@ from DTO.wb_dop_columns import WBDopColumnsDTO
 columns_dto = WBColumnsDTO()
 dop_columns_dto = WBDopColumnsDTO()
 
-yellow_fill = PatternFill(start_color='FFFF00',  # Желтый цвет
-                          end_color='FFFF00',
+yellow_fill = PatternFill(start_color='F8FCC4',  # Желтый цвет
+                          end_color='F8FCC4',
                           fill_type='solid')
-green_fill = PatternFill(start_color='c9eaa9',  # Зеленый цвет
-                         end_color='c9eaa9',
+green_fill = PatternFill(start_color='C9EAA9',  # Зеленый цвет
+                         end_color='C9EAA9',
                          fill_type='solid')
 light_green_fill = PatternFill(start_color='60e755',  # Зеленый цвет
                          end_color='60e755',
                          fill_type='solid')
 
-red_fill = PatternFill(start_color='FF0000',  # Красный цвет
-                       end_color='FF0000',
+red_fill = PatternFill(start_color='FFC7CE',  # Красный цвет (Розовый цвет)
+                       end_color='FFC7CE',
                        fill_type='solid')
-orange_fill = PatternFill(start_color="FFA500",
-                          end_color="FFA500",
+orange_fill = PatternFill(start_color="FFEB9C", # Оранжевый цвет (Желтоватый цвет)
+                          end_color="FFEB9C",
                           fill_type="solid")
 blue_fill = PatternFill(start_color="9FD6E5",
                           end_color="9FD6E5",
@@ -30,8 +30,8 @@ ozon_color_fill = PatternFill(start_color="5295CB",
                               end_color="5295CB",
                               fill_type="solid")
 
-pink_fill = PatternFill(start_color="EC6FD8",
-                        end_color="EC6FD8",
+pink_fill = PatternFill(start_color="EF99D8",
+                        end_color="EF99D8",
                         fill_type="solid")
 
 

@@ -7,7 +7,7 @@ from typing import Literal, Optional, List, Union
 import pandas as pd
 
 from DTO.ozon_columns_dto import OZONColumnsDTO
-from config import TIME_SLEEP_CARDS_LINK, YANDEX_FILE_NAME, MAIN_DIR_PRICES
+from config import TIME_SLEEP_CARDS_LINK, YANDEX_FILE_NAME, MAIN_DIR_PRICES, MAIN_OZON_BRANDS
 from services.redaction import RedactionService
 from services.yandex_disk import YandexDiskManager
 
@@ -109,7 +109,7 @@ class OzonService:
 
     def get_prices_info(self, cards_df: pd.DataFrame) -> pd.DataFrame:
         if self.yadisk.is_file_older_than_12_hours():
-            cards_df_for_sale = cards_df[cards_df[self.ozon_columns.status] == 'Продается'].copy()
+            cards_df_for_sale = cards_df[(cards_df[self.ozon_columns.status] == 'Продается') & (cards_df[self.ozon_columns.brand].isin(MAIN_OZON_BRANDS))].copy()
 
             # collections_merged = self.red.merge_collections(collections_1_df, collections_2_df)
 
@@ -154,7 +154,7 @@ class OzonService:
             articles,
             user_agent,
             cookies_dict,
-            batch_size=500,  # Размер батча
+            batch_size=100,  # Размер батча
             delay_between_batches=60  # Задержка между батчами
         )
         prices = save_results(results, col_name='url')

@@ -125,11 +125,16 @@ class OZONExcelFormatter:
         formula = f"=ROUND(((1 - {columns[self.main_columns_dto.purchase]}{row} / (1 - ({columns[self.new_columns_dto.mp_commission]}{row} / 100)) / {columns[self.main_columns_dto.price_without_discount]}{row}) * 100),0)"
         return formula
 
-    def _formula_recommended_discount(self, columns, row):
+    def _formula_recommended_price(self, columns, row):
         formula = (
             f"=IF({columns[self.main_columns_dto.equilibrium_discount]}{row} < {columns[self.new_columns_dto.max_discount_including_commission]}{row},"
-            f"{columns[self.main_columns_dto.equilibrium_discount]}{row},"
-            f"{columns[self.new_columns_dto.max_discount_including_commission]}{row})")
+            f"IF({columns[self.main_columns_dto.equilibrium_discount]}{row} > 50,"
+            f"{columns[self.main_columns_dto.price_without_discount]}{row} / 2,"
+            f"{columns[self.main_columns_dto.equilibrium_price]}{row}),"
+            f"IF({columns[self.new_columns_dto.max_discount_including_commission]}{row} < 0,-1,"
+            f"IF({columns[self.new_columns_dto.max_discount_including_commission]}{row} > 50,"
+            f"{columns[self.main_columns_dto.price_without_discount]}{row} / 2,"
+            f"ROUND((1 - {columns[self.new_columns_dto.max_discount_including_commission]}{row} / 100) * {columns[self.main_columns_dto.price_without_discount]}{row},0))))")
         return formula
 
     def _fill_formulas(self, ws, cols):
@@ -140,7 +145,7 @@ class OZONExcelFormatter:
             ws[f"{cols[self.new_columns_dto.mu_with_discount_from_the_price_with_spp]}{row}"] = self._formula_mu_with_discount_from_the_price_with_spp(cols, row)
             ws[f"{cols[self.new_columns_dto.mu_taking_into_account_the_wb_commission]}{row}"] = self._formula_mu_taking_into_account_the_wb_commission(cols, row)
             ws[f"{cols[self.new_columns_dto.max_discount_including_commission]}{row}"] = self._formula_max_discount_including_commission(cols, row)
-            ws[f"{cols[self.new_columns_dto.recommended_discount]}{row}"] = self._formula_recommended_discount(cols, row)
+            ws[f"{cols[self.new_columns_dto.recommended_discount]}{row}"] = self._formula_recommended_price(cols, row)
 
             ws[f"{cols[self.main_columns_dto.ozon_discount]}{row}"].fill = ozon_color_fill
             ws[f"{cols[self.main_columns_dto.seller_discount]}{row}"].fill = green_fill
