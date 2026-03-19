@@ -6,6 +6,7 @@ import pandas as pd
 from DTO.columns_dto import WBColumnsDTO
 from DTO.wb_dop_columns import WBDopColumnsDTO
 from DTO.ozon_columns_dto import OZONColumnsDTO
+from config import MAIN_OZON_BRANDS, OZON_DISCOUNT_SELECT
 from utils.prices_helper import transform_dataframe
 
 
@@ -22,7 +23,6 @@ class CorrectorStrategy(ABC):
 class CorrExcelStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame) -> list[dict]:
         df = df[~df[self.dop_columns.new_discount].isna()]
-        df.to_csv('try2.csv', index=False)
         columns_to_int = [self.wb_columns.wb_article, self.wb_columns.wb_price_without_discount, self.dop_columns.new_discount]
         for column in columns_to_int:
             df[column] = df[column].astype(int)
@@ -30,7 +30,6 @@ class CorrExcelStrategy(CorrectorStrategy):
         df.rename({self.wb_columns.wb_article: 'nmID',
                    self.wb_columns.med_price_without_discount: 'price',
                    self.dop_columns.new_discount: 'discount'}, inplace=True, axis=1)
-        df.to_csv('try3.csv', index=False)
         final_dict = df[['nmID', 'price', 'discount']].to_dict('records')
         return final_dict
 
@@ -149,15 +148,14 @@ class CorrectFromClientStrategy(CorrectorStrategy):
 
 class CorrectPricesOZONStrategy(CorrectorStrategy):
     def correcting(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        df.loc[~(df[self.ozon_columns.brand].isin(MAIN_OZON_BRANDS)),self.ozon_columns.price_with_ozon_discount] = round(df[self.ozon_columns.price_with_seller_discount] * (1 - OZON_DISCOUNT_SELECT / 100))
         df[self.ozon_columns.ozon_discount] = 100 - round(
             (df[self.ozon_columns.price_with_ozon_discount] / df[self.ozon_columns.price_with_seller_discount]) * 100)
         columns_to_update = [self.ozon_columns.price_with_ozon_club, self.ozon_columns.price_with_ozon_discount, self.ozon_columns.ozon_discount]
         for col in columns_to_update:
             df[col].fillna(0, inplace=True)
             df[col] = pd.to_numeric(df[col], downcast="integer")
-        # Удаляем строки, где оба столбца равны 0
-        mask = (df[self.ozon_columns.price_with_ozon_discount] == 0)
-        df = df[~mask]
+        df = df[~(df[self.ozon_columns.price_with_ozon_discount] == 0)]
         return df
 
 class CorrectSellerPricesOZONStrategy(CorrectorStrategy):

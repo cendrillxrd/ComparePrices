@@ -196,8 +196,6 @@ class ConvCardsInfoOZONStrategy(ConverterStrategy):
     def converting(self, data, **kwargs) -> pd.DataFrame:
         df = pd.read_csv(BytesIO(data.content), encoding='utf-8', sep=';')
 
-        df.to_csv('goods_info.csv', encoding='utf-8', index=False)
-
         columns_name = [column for column in df.columns if column in BASE_COLUMNS_NAME_OZON]
 
         columns_rename = {k: BASE_COLUMNS_NAME_OZON.get(k) for k in columns_name}

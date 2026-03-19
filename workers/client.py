@@ -218,7 +218,8 @@ class OzonAPIClient(Client):
                      params: Optional[Dict] = None,
                      payload: Optional[Dict] = None,
                      zip_needs: bool = False,
-                     retries: int = 5):
+                     retries: int = 5,
+                     timeout: int = (10,60),):
         url = f'{self.base_url[url_key]}{endpoint}'
 
         # Устанавливаем Content-Type

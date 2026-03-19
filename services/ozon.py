@@ -154,7 +154,7 @@ class OzonService:
             articles,
             user_agent,
             cookies_dict,
-            batch_size=100,  # Размер батча
+            batch_size=500,  # Размер батча
             delay_between_batches=60  # Задержка между батчами
         )
         prices = save_results(results, col_name='url')
