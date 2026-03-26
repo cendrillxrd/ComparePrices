@@ -244,6 +244,19 @@ class OzonAPIClient(Client):
                     timeout=(30, 60)  # (connect_timeout, read_timeout)
                 )
 
+                # Явная проверка на 500 до raise_for_status
+                if response.status_code == 500:
+                    logger.warning(f'Получена 500 ошибка (попытка {attempt + 1}/{retries})')
+
+                    if attempt < retries - 1:
+                        wait_time = min(5 * (attempt + 1), 30)  # 5, 10, 15, 20, 25 сек
+                        logger.info(f'Ждем {wait_time} секунд перед повторной попыткой...')
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        logger.error('Все попытки исчерпаны, поднимаем ошибку')
+                        response.raise_for_status()  # Выбросит исключение
+
                 response.raise_for_status()
                 logger.info('Запрос выполнен успешно')
 
