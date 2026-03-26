@@ -128,13 +128,9 @@ class OZONExcelFormatter:
     def _formula_recommended_price(self, columns, row):
         formula = (
             f"=IF({columns[self.main_columns_dto.equilibrium_discount]}{row} < {columns[self.new_columns_dto.max_discount_including_commission]}{row},"
-            f"IF({columns[self.main_columns_dto.equilibrium_discount]}{row} > 50,"
-            f"{columns[self.main_columns_dto.price_without_discount]}{row} / 2,"
-            f"{columns[self.main_columns_dto.equilibrium_price]}{row}),"
+            f"{columns[self.main_columns_dto.equilibrium_price]}{row},"
             f"IF({columns[self.new_columns_dto.max_discount_including_commission]}{row} < 0,-1,"
-            f"IF({columns[self.new_columns_dto.max_discount_including_commission]}{row} > 50,"
-            f"{columns[self.main_columns_dto.price_without_discount]}{row} / 2,"
-            f"ROUND((1 - {columns[self.new_columns_dto.max_discount_including_commission]}{row} / 100) * {columns[self.main_columns_dto.price_without_discount]}{row},0))))")
+            f"ROUND((1 - {columns[self.new_columns_dto.max_discount_including_commission]}{row} / 100) * {columns[self.main_columns_dto.price_without_discount]}{row},0)))")
         return formula
 
     def _fill_formulas(self, ws, cols):
