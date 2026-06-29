@@ -72,6 +72,7 @@ class ConvPricesMEDStrategy(ConverterStrategy):
     def converting(self, data, **kwargs) -> pd.DataFrame:
         """Преобразует данные о ценах на меде в DataFrame"""
         med_prices_df = pd.read_csv(StringIO(data.text), encoding='utf-8')
+        med_prices_df.columns = [col.encode('latin1').decode('utf-8') for col in med_prices_df.columns]
         med_prices_df.drop_duplicates(inplace=True)
 
         columns_name = [column for column in med_prices_df.columns if column in BASE_COLUMNS_NAME_WB]

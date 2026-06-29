@@ -25,5 +25,6 @@ class WBColumnsDTO:
     med_price_with_discount: str = '(MED) Цена со скидкой продавца'
     price_difference: str = 'Разность цен ●'
     equilibrium_discount: str = 'Скидка для равновесия'
+    equilibrium_discount_100: str = 'Скидка для +100'
     plan_discount: str = 'Скидка для акции'
     purchase: str = 'Закупка'

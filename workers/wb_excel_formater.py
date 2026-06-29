@@ -57,7 +57,8 @@ class WBExcelFormatter:
         for col in self.df.columns:
             if col not in (self.new_columns_dto.solution, self.new_columns_dto.new_discount,
                            self.new_columns_dto.price_with_new_seller_discount, self.new_columns_dto.price_with_new_seller_discount_and_wb_discount,
-                           self.new_columns_dto.max_discount_including_commission, self.new_columns_dto.diff_price, self.new_columns_dto.recommended_discount):
+                           self.new_columns_dto.max_discount_including_commission, self.new_columns_dto.diff_price, self.new_columns_dto.recommended_discount,
+                           self.new_columns_dto.recommended_discount_100):
                 if col == self.main_columns_dto.wb_price_without_discount:  # Перед РРЦ
                     # Добавляем колонку с выпадающим списком
                     self.actual_columns.append(self.new_columns_dto.solution)
@@ -70,6 +71,7 @@ class WBExcelFormatter:
                     self.actual_columns.append(self.new_columns_dto.diff_price)
                     self.actual_columns.append(self.new_columns_dto.max_discount_including_commission)
                     self.actual_columns.append(self.new_columns_dto.recommended_discount)
+                    self.actual_columns.append(self.new_columns_dto.recommended_discount_100)
 
         # Переупорядочиваем датафрейм
         ordered_df = self.df.reindex(columns=self.actual_columns)
@@ -155,6 +157,13 @@ class WBExcelFormatter:
             f"{columns[self.new_columns_dto.max_discount_including_commission]}{row})")
         return formula
 
+    def _formula_recommended_discount_100(self, columns, row):
+        formula = (
+            f"=IF({columns[self.main_columns_dto.equilibrium_discount_100]}{row} < {columns[self.new_columns_dto.max_discount_including_commission]}{row},"
+            f"{columns[self.main_columns_dto.equilibrium_discount_100]}{row},"
+            f"{columns[self.new_columns_dto.max_discount_including_commission]}{row})")
+        return formula
+
     def _fill_formulas(self, ws, cols):
         for row in range(2, len(self.df) + 2):
             ws[f"{cols[self.new_columns_dto.price_with_new_seller_discount]}{row}"] = self._formula_new_price_with_our_discount(cols, row)
@@ -166,6 +175,7 @@ class WBExcelFormatter:
             ws[f"{cols[self.new_columns_dto.mu_taking_into_account_the_wb_commission]}{row}"] = self._formula_mu_taking_into_account_the_wb_commission(cols, row)
             ws[f"{cols[self.new_columns_dto.max_discount_including_commission]}{row}"] = self._formula_max_discount_including_commission(cols, row)
             ws[f"{cols[self.new_columns_dto.recommended_discount]}{row}"] = self._formula_recommended_discount(cols, row)
+            ws[f"{cols[self.new_columns_dto.recommended_discount_100]}{row}"] = self._formula_recommended_discount_100(cols, row)
             ws[f"{cols[self.new_columns_dto.diff_price]}{row}"] = self._formula_diff_price(cols, row)
 
             ws[f"{cols[self.main_columns_dto.wb_discount]}{row}"].fill = pink_fill

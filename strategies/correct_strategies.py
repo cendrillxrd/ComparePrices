@@ -104,9 +104,22 @@ class CorrCollectionsStrategy(CorrectorStrategy):
         df[self.wb_columns.equilibrium_discount] = round(100 * (1 - df[self.wb_columns.med_price_with_discount] /
                                                                 (df[self.wb_columns.wb_price_without_discount] *
                                                                  (1 - df[self.wb_columns.wb_discount] / 100))))  # высчитываем скидку для равновесия
+
+        df[self.wb_columns.equilibrium_discount_100] = round(100 * (1 - (df[self.wb_columns.med_price_with_discount] + 100) /
+                                                                    (df[self.wb_columns.wb_price_without_discount] *
+                                                                 (1 - df[
+                                                                     self.wb_columns.wb_discount] / 100))))  # высчитываем скидку для равновесия
+
         df[self.wb_columns.equilibrium_discount] = df[self.wb_columns.equilibrium_discount].clip(lower=0)  # если скидка отрицательная, то меняем на 0 (невозможно уравнять)
         df.loc[df[self.wb_columns.equilibrium_discount] == 100, self.wb_columns.equilibrium_discount] = -1  # если скидка 100 %, то меняем на -1 (товара нет на меде)
         df[self.wb_columns.price_difference] = df[self.wb_columns.med_price_with_discount] - df[self.wb_columns.wb_price_with_wb_discount]   # подсчет разности цен
+
+
+        #Для +300
+        df[self.wb_columns.equilibrium_discount_100] = df[self.wb_columns.equilibrium_discount_100].clip(
+            lower=0)  # если скидка отрицательная, то меняем на 0 (невозможно уравнять)
+        df.loc[df[
+                   self.wb_columns.equilibrium_discount_100] == 100, self.wb_columns.equilibrium_discount] = -1  # если скидка 100 %, то меняем на -1 (товара нет на меде)
         return df
 
 class CorrectCardsCollections(CorrectorStrategy):

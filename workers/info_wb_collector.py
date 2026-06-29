@@ -26,7 +26,6 @@ class InfoWBCollector:
         wb_fbs_stocks = self.wb.get_wb_stocks('mp')
         wb_fbw_stocks = self.wb.get_wb_stocks('wb')
         purchase = self.med.get_med_purchase()
-
         return InfoWBDTO(
             wb_cards_prices=wb_cards_prices,
             wb_prices=wb_prices,
