@@ -119,7 +119,7 @@ class CorrCollectionsStrategy(CorrectorStrategy):
         df[self.wb_columns.equilibrium_discount_100] = df[self.wb_columns.equilibrium_discount_100].clip(
             lower=0)  # если скидка отрицательная, то меняем на 0 (невозможно уравнять)
         df.loc[df[
-                   self.wb_columns.equilibrium_discount_100] == 100, self.wb_columns.equilibrium_discount] = -1  # если скидка 100 %, то меняем на -1 (товара нет на меде)
+                   self.wb_columns.equilibrium_discount_100] == 100, self.wb_columns.equilibrium_discount_100] = -1  # если скидка 100 %, то меняем на -1 (товара нет на меде)
         return df
 
 class CorrectCardsCollections(CorrectorStrategy):

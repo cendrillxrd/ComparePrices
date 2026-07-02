@@ -4,14 +4,12 @@ from typing import Tuple
 import time
 import aiohttp
 from bs4 import BeautifulSoup
-import undetected_chromedriver as uc
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import random
-import chromedriver_autoinstaller
 
 from utils.prices_helper import clean_price
 from logging_config import setup_logging

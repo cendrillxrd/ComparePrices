@@ -117,9 +117,16 @@ class WBService:
         stocks_df = self.converter.convert(stocks_json, stock_type=stock_type)
         return stocks_df
 
+    # @with_strategies(ReqWbCardsPricesStrategy, ConvWbCardsPricesStrategy, 'http')
+    # def get_wb_cards_prices(self) -> pd.DataFrame:
+    #     logger.info('Получение данных о ценах в карточках товаров')
+    #     wb_cards_prices_json = self.wb_http_client.get_data()
+    #     wb_cards_prices_df = self.converter.convert(wb_cards_prices_json)
+    #     return wb_cards_prices_df
+
     @with_strategies(ReqWbCardsPricesStrategy, ConvWbCardsPricesStrategy, 'http')
-    def get_wb_cards_prices(self) -> pd.DataFrame:
+    def get_wb_cards_prices(self, nm_ids: list[int]) -> pd.DataFrame:
         logger.info('Получение данных о ценах в карточках товаров')
-        wb_cards_prices_json = self.wb_http_client.get_data()
+        wb_cards_prices_json = self.wb_http_client.get_data(nm_ids=nm_ids)
         wb_cards_prices_df = self.converter.convert(wb_cards_prices_json)
         return wb_cards_prices_df

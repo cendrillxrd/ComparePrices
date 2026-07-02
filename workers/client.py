@@ -1,23 +1,25 @@
 import logging
 import random
+import re
+import time
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Literal, Optional, Union
 
-import json
+import requests
+from bs4 import BeautifulSoup
+from requests.adapters import HTTPAdapter
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from urllib3.util.retry import Retry
 
-
-from config import API_KEYS_WB, BASE_URLS, DELAY_INTERVAL, HEADERS, PARAMS, RETRY_TIMES, API_KEY_OZON, CLIENT_ID
+from config import API_KEYS_WB, BASE_URLS, CLUB_PROCENT, DELAY_INTERVAL, HEADERS, PARAMS, RETRY_TIMES, API_KEY_OZON, \
+    CLIENT_ID
 from logging_config import setup_logging
 from strategies.request_strategies import RequestStrategy
-
-import time
-import requests
-from typing import Dict, Optional, Literal
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -56,14 +58,14 @@ class WildberriesAPIClient(Client):
                      retries: int = RETRY_TIMES):
         url = f'{self.base_url[url_key]}{endpoint}'
         logger.info(f'Выполнение запроса по адресу {url}')
-        
+
         for attempt in range(retries):
             self.session.headers.update({'Authorization': self.api_key[api_type]})
             response = self.session.request(method=method,
                                             url=url,
                                             params=params,
                                             json=payload,
-                                            timeout=30)
+                                            timeout=60)
             logger.info(f'Запрос выполнен успешно')
             try:
                 response.raise_for_status()
@@ -94,115 +96,203 @@ class WildberriesAPIClient(Client):
         return self.__strategy.get_info(self, **kwargs)
 
 
-import time
-import json
-from json import JSONDecodeError
-from selenium.common.exceptions import TimeoutException, WebDriverException
-
-
 class WildberriesHttpClient(Client):
+    """
+    Парсер карточек WB через Selenium.
+    Запускает N браузеров параллельно (BROWSER_COUNT), каждый обходит свою часть артикулов.
+    Аналог OzonPriceParser — браузер выполняет JS, страница полностью рендерится.
+    """
+    BROWSER_COUNT = 10  # сколько браузеров запускать параллельно
+    DELAY_MIN = 2.0  # задержка между карточками внутри одного браузера
+    DELAY_MAX = 4.0
+    DELAY_ON_BLOCK = 60.0  # пауза если браузер поймал блокировку
+    PAGE_LOAD_TIMEOUT = 20  # сколько ждём загрузки карточки (сек)
+    CARD_URL = 'https://www.wildberries.ru/catalog/{nm_id}/detail.aspx'
+
     def __init__(self):
         self.__strategy = None
-        self.max_retries = 3  # Максимальное количество попыток
-        self.retry_delay = 5  # Начальная задержка в секундах
 
-    def make_request(self, page: str, **kwargs):
-        """Метод с автоматическими повторными попытками при ошибках"""
+    # ------------------------------------------------------------------ #
+    # Создание браузера
+    # ------------------------------------------------------------------ #
+    @staticmethod
+    def _make_driver() -> webdriver.Chrome:
+        options = Options()
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--window-size=1920,1080')
+        options.add_argument('--disable-extensions')
+        # НЕ headless — ВБ его детектирует и не рендерит React
+        return webdriver.Chrome(options=options)
 
-        for attempt in range(self.max_retries):
-            driver = None
+    # ------------------------------------------------------------------ #
+    # Прогрев одного браузера (заходим на главную чтобы получить куки)
+    # ------------------------------------------------------------------ #
+    @staticmethod
+    def _warmup(driver: webdriver.Chrome) -> None:
+        driver.get('https://www.wildberries.ru')
+        try:
+            WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located((By.ID, 'header'))
+            )
+        except Exception:
+            pass
+        time.sleep(random.uniform(2, 4))
+
+    # ------------------------------------------------------------------ #
+    # Парсинг одной карточки через браузер
+    # ------------------------------------------------------------------ #
+    def _fetch_card_selenium(self, driver: webdriver.Chrome, nm_id: int) -> dict | None:
+        url = self.CARD_URL.format(nm_id=nm_id)
+        for attempt in range(3):
             try:
-                print(f"Попытка {attempt + 1} из {self.max_retries} для страницы {page}")
-
-                driver = self.setup_driver()
-
-                url = f'https://www.wildberries.ru/__internal/u-catalog/sellers/v4/catalog?ab_testing=false&ab_testing=false&appType=1&curr=rub&dest=12358062&hide_dtype=11&inheritFilters=false&lang=ru&page={page}&sort=popular&spp=30&supplier=859504'
-
                 driver.get(url)
-                time.sleep(5)  # Ожидание загрузки страницы
 
-                full_text = driver.find_element(By.TAG_NAME, "body").text
+                # Ждём пока React отрендерит карточку.
+                # Признак рендера — появление data-testid на корневом div карточки
+                # или любого элемента с классом priceBlock.
+                # Используем JS-поллинг — надёжнее чем WebDriverWait на классы с суффиксами.
+                rendered = False
+                for _ in range(self.PAGE_LOAD_TIMEOUT):
+                    try:
+                        found = driver.execute_script("""
+                            return !!(
+                                document.querySelector('[data-testid]') &&
+                                document.querySelector('[class*="priceBlock"]')
+                            )
+                        """)
+                        if found:
+                            rendered = True
+                            break
+                    except Exception:
+                        pass
+                    time.sleep(1)
 
-                # Проверка на пустой ответ
-                if not full_text or full_text.strip() == '':
-                    raise ValueError(f"Пустой ответ от сервера для страницы {page}")
+                if not rendered:
+                    logger.debug(f'Артикул {nm_id}: страница не отрендерилась, попытка {attempt + 1}/3')
+                    if attempt < 2:
+                        time.sleep(self.DELAY_ON_BLOCK)
+                        continue
+                    return None
 
-                # Проверка, не вернулась ли HTML страница с ошибкой
-                if full_text.strip().startswith('<!DOCTYPE') or '<html' in full_text.lower():
-                    raise ValueError(
-                        f"Получен HTML вместо JSON. Возможно, страница {page} не существует или требуется капча")
-
-                # Попытка парсинга JSON
-                data = json.loads(full_text)
-
-                # Если успешно - выходим из функции
-                print(f"Успешно получены данные для страницы {page}")
-                return data
-
-            except JSONDecodeError as e:
-                print(f"Ошибка парсинга JSON на попытке {attempt + 1}: {e}")
-                print(f"Первые 500 символов ответа: {full_text[:500] if 'full_text' in locals() else 'Нет данных'}")
-
-                if attempt < self.max_retries - 1:
-                    wait_time = self.retry_delay * (attempt + 1)  # Увеличиваем задержку с каждой попыткой
-                    print(f"Повторная попытка через {wait_time} секунд...")
-                    time.sleep(wait_time)
-                else:
-                    print(f"Не удалось получить JSON после {self.max_retries} попыток")
-                    raise
-
-            except (ValueError, TimeoutException, WebDriverException) as e:
-                print(f"Ошибка на попытке {attempt + 1}: {e}")
-
-                if attempt < self.max_retries - 1:
-                    wait_time = self.retry_delay * (attempt + 1)
-                    print(f"Повторная попытка через {wait_time} секунд...")
-                    time.sleep(wait_time)
-                else:
-                    print(f"Критическая ошибка после {self.max_retries} попыток")
-                    raise
+                html = driver.page_source
+                return self._parse_card(nm_id, html)
 
             except Exception as e:
-                print(f"Неожиданная ошибка на попытке {attempt + 1}: {e}")
+                logger.warning(f'Артикул {nm_id}: {e}, попытка {attempt + 1}/3')
+                time.sleep(5 * (attempt + 1))
+        return None
 
-                if attempt < self.max_retries - 1:
-                    wait_time = self.retry_delay * (attempt + 1)
-                    print(f"Повторная попытка через {wait_time} секунд...")
-                    time.sleep(wait_time)
-                else:
-                    raise
+    # ------------------------------------------------------------------ #
+    # Воркер — один браузер обходит свой список артикулов
+    # ------------------------------------------------------------------ #
+    def _worker(self, nm_ids: list[int], worker_id: int) -> list[dict]:
+        results = []
+        driver = self._make_driver()
+        try:
+            logger.info(f'Браузер {worker_id}: старт, {len(nm_ids)} артикулов')
+            self._warmup(driver)
 
-            finally:
-                # Всегда закрываем драйвер, даже при ошибке
-                if driver:
-                    try:
-                        driver.quit()
-                    except:
-                        pass
+            for i, nm_id in enumerate(nm_ids):
+                result = self._fetch_card_selenium(driver, nm_id)
+                if result:
+                    results.append(result)
+
+                if (i + 1) % 10 == 0:
+                    logger.info(f'Браузер {worker_id}: обработано {i + 1}/{len(nm_ids)}')
+
+                time.sleep(random.uniform(self.DELAY_MIN, self.DELAY_MAX))
+
+        except Exception as e:
+            logger.error(f'Браузер {worker_id}: критическая ошибка — {e}')
+        finally:
+            driver.quit()
+            logger.info(f'Браузер {worker_id}: завершён, получено {len(results)} карточек')
+
+        return results
+
+    # ------------------------------------------------------------------ #
+    # Публичный интерфейс
+    # ------------------------------------------------------------------ #
+    def make_request(self, nm_ids: list[int], **kwargs) -> list[dict]:
+        total = len(nm_ids)
+        logger.info(f'Запуск парсинга {total} артикулов, браузеров: {self.BROWSER_COUNT}')
+
+        # Делим артикулы поровну между браузерами
+        chunk_size = -(-total // self.BROWSER_COUNT)  # ceil division
+        chunks = [nm_ids[i:i + chunk_size] for i in range(0, total, chunk_size)]
+
+        results = []
+        with ThreadPoolExecutor(max_workers=self.BROWSER_COUNT) as executor:
+            futures = {
+                executor.submit(self._worker, chunk, i + 1): i
+                for i, chunk in enumerate(chunks)
+            }
+            for future in as_completed(futures):
+                try:
+                    results.extend(future.result())
+                except Exception as e:
+                    logger.error(f'Воркер завершился с ошибкой: {e}')
+
+        logger.info(f'Итого получено карточек: {len(results)} из {total}')
+        return results
 
     @staticmethod
-    def setup_driver():
-        options = Options()
+    def _parse_card(nm_id: int, html: str) -> dict | None:
+        soup = BeautifulSoup(html, 'html.parser')
+        # --- Цена ---
+        # В HTML два места с ценой:
+        #   <ins class="... priceBlockFinalPrice--iToZR">20&nbsp;510&nbsp;₽</ins>  (основной блок)
+        #   <span class="... priceBlockFinalPrice--aBPT6">20&nbsp;510&nbsp;₽</span> (блок заказа внизу)
+        # Паттерн priceBlock.*Price ловит оба варианта
+        price_tag = soup.find('ins', class_=re.compile(r'priceBlock.*Price'))
+        if not price_tag:
+            price_tag = soup.find('span', class_=re.compile(r'priceBlock.*Price'))
+        if not price_tag:
+            logger.debug(f'Артикул {nm_id}: блок цены не найден')
+            return None
+        price_text = price_tag.get_text(separator='', strip=True)
+        price_clean = re.sub(r'[^\d]', '', price_text)
+        if not price_clean:
+            return None
+        price_kopecks = int(price_clean) * 100  # конвертер делит на 100
 
-        # Основные настройки для обхода детектирования
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument("--disable-extensions")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument('--headless=new')
+        # --- Название ---
+        # В HTML: <h2 class="... productTitle--lfc4o">Ботильоны натуральная кожа</h2>
+        # Ищем без указания тега — ВБ может поменять h1/h2
+        name_tag = soup.find(class_=re.compile(r'productTitle'))
+        name = name_tag.get_text(strip=True) if name_tag else ''
 
-        # User-Agent
-        options.add_argument(
-            "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        # # --- Бренд ---
+        # # Если у товара есть бренд — он в brandBadgeText
+        # # Если нет — берём первый sellerAndBrandItemName (продавец/бренд в одном блоке)
+        # brand = ''
+        # brand_tag = soup.find('span', class_=re.compile(r'brandBadgeText'))
+        # if brand_tag:
+        #     brand = brand_tag.get_text(strip=True)
 
-        driver = webdriver.Chrome(options=options)
+        # --- Категория ---
+        # Хлебные крошки находятся в блоке с классом breadcrumbs--...
+        # Ссылки вида /catalog/<slug> — последняя из них и есть категория.
+        # Избегаем ссылок из меню — их в HTML очень много, они идут ДО блока крошек.
+        entity = ''
+        breadcrumb_block = soup.find(class_=re.compile(r'^breadcrumbs--', re.I))
+        if breadcrumb_block:
+            links = breadcrumb_block.find_all('a', href=re.compile(r'/catalog/'))
+            if links:
+                entity = links[-1].get_text(strip=True)
 
-        # Скрываем WebDriver свойства
-        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-
-        return driver
+        logger.debug(f'Артикул {nm_id}: цена={price_kopecks // 100}, '
+                     f'категория={entity!r}, название={name[:30]!r}')
+        return {
+            'id': nm_id,
+            'entity': entity,
+            'name': name,
+            'sizes': [{'price': {'product': price_kopecks}}],
+        }
 
     def set_strategy(self, strategy: RequestStrategy):
         self.__strategy = strategy
@@ -210,18 +300,20 @@ class WildberriesHttpClient(Client):
     def get_data(self, **kwargs) -> list[dict]:
         if self.__strategy is None:
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
-        return self.__strategy.get_info(self)
+        return self.__strategy.get_info(self, **kwargs)
+
 
 class MedClient(Client):
     def __init__(self):
         self.base_url = BASE_URLS
         self.__strategy = None
 
-    def make_request(self, url_key: Literal['med_prices', 'med_collections_1', 'med_collections_2', 'med_purchase'], login: str = None,
-                     password: str = None,):
+    def make_request(self, url_key: Literal['med_prices', 'med_collections_1', 'med_collections_2', 'med_purchase'],
+                     login: str = None,
+                     password: str = None, ):
         url = f'{self.base_url[url_key]}'
         logger.info(f'Выполнение запроса по адресу {url}')
-        response = requests.get(url, auth=(login, password), timeout=(30,30))
+        response = requests.get(url, auth=(login, password), timeout=(30, 30))
         return response
 
     def set_strategy(self, strategy: RequestStrategy):
@@ -231,6 +323,7 @@ class MedClient(Client):
         if self.__strategy is None:
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
         return self.__strategy.get_info(self)
+
 
 class HttpClient(Client):
     def __init__(self):
@@ -248,17 +341,6 @@ class HttpClient(Client):
         if self.__strategy is None:
             raise ValueError('Стратегия не выбрана, установите стратегию с помощью set_strategy')
         return self.__strategy.get_info(self, **kwargs)
-
-
-import time
-import random
-import logging
-from typing import Optional, Dict, Literal
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-import requests
-
-logger = logging.getLogger(__name__)
 
 
 class OzonAPIClient(Client):

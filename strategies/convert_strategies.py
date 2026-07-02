@@ -104,7 +104,7 @@ class ConvCollectionsMEDStrategy(ConverterStrategy):
         if kwargs['type'] == 'wb':
             med_collections_df.drop_duplicates(subset=self.wb_columns.seller_article, inplace=True)
             med_collections_df.reset_index(inplace=True, drop=True)
-        med_without_unnecessary_columns = med_collections_df[[self.wb_columns.ozon_id, self.wb_columns.seller_article, self.wb_columns.collection]]
+        med_without_unnecessary_columns = med_collections_df[[self.wb_columns.ozon_id, self.wb_columns.seller_article, self.wb_columns.collection, self.wb_columns.brand]]
         return med_without_unnecessary_columns
 
 class ConvPurchaseMEDStrategy(ConverterStrategy):
@@ -179,7 +179,7 @@ class ConvWbCardsPricesStrategy(ConverterStrategy):
         prices_df = pd.DataFrame()
         for card in data:
             articul = card['id']
-            brand = card['brand']
+            # brand = card['brand']
             category = card['entity']
             name = card['name']
             price = card["sizes"][0]["price"]["product"] // 100
@@ -187,7 +187,7 @@ class ConvWbCardsPricesStrategy(ConverterStrategy):
             prices.append({self.wb_columns.wb_article: articul,
                            self.wb_columns.wb_price_with_wb_discount: price,
                            self.wb_columns.wb_price_with_wb_club: price_with_wb_club,
-                           self.wb_columns.brand: brand,
+                           # self.wb_columns.brand: brand,
                            self.wb_columns.category: category,
                            self.wb_columns.name: name, })
             prices_df = pd.DataFrame(prices)

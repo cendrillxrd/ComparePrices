@@ -165,26 +165,37 @@ class ReqWBAPIPricesStrategy(RequestStrategy):
             list_goods = response['data']['listGoods']
         return result
 
-class ReqWbCardsPricesStrategy(RequestStrategy):
-    @staticmethod
-    def get_product_list(client: 'Client', page: str) -> list[dict]:
-        logger.debug(f'Страница {page}')
-        content = client.make_request(page)
-        product_list = content['products']
-        sleep_time = random.uniform(1, 10)
-        time.sleep(sleep_time)
-        return product_list
+# class ReqWbCardsPricesStrategy(RequestStrategy):
+#     @staticmethod
+#     def get_product_list(client: 'Client', page: str) -> list[dict]:
+#         logger.debug(f'Страница {page}')
+#         content = client.make_request(page)
+#         product_list = content['products']
+#         sleep_time = random.uniform(1, 10)
+#         time.sleep(sleep_time)
+#         return product_list
+#
+#     def get_info(self, client: 'Client', **kwargs) -> list[dict]:
+#         logger.info(f'Получение данных о ценах в карточках WB')
+#         cards = []
+#         page = 1
+#         product_list = self.get_product_list(client, str(page))
+#         while product_list != []:
+#             cards.extend(product_list)
+#             page += 1
+#             product_list = self.get_product_list(client, str(page))
+#         return cards
 
+
+class ReqWbCardsPricesStrategy(RequestStrategy):
     def get_info(self, client: 'Client', **kwargs) -> list[dict]:
-        logger.info(f'Получение данных о ценах в карточках WB')
-        cards = []
-        page = 1
-        product_list = self.get_product_list(client, str(page))
-        while product_list != []:
-            cards.extend(product_list)
-            page += 1
-            product_list = self.get_product_list(client, str(page))
-        return cards
+        logger.info('Получение данных о ценах в карточках WB')
+        nm_ids: list[int] = kwargs.get('nm_ids', [])
+        if not nm_ids:
+            logger.warning('ReqWbCardsPricesStrategy: список артикулов пуст')
+            return []
+        return client.make_request(nm_ids)
+
 
 class ReqStocksWBStrategy(RequestStrategy):
     endpoint = "/api/v2/stocks-report/products/products"
