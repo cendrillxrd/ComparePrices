@@ -104,7 +104,7 @@ class ConvCollectionsMEDStrategy(ConverterStrategy):
         if kwargs['type'] == 'wb':
             med_collections_df.drop_duplicates(subset=self.wb_columns.seller_article, inplace=True)
             med_collections_df.reset_index(inplace=True, drop=True)
-        med_without_unnecessary_columns = med_collections_df[[self.wb_columns.ozon_id, self.wb_columns.seller_article, self.wb_columns.collection, self.wb_columns.brand]]
+        med_without_unnecessary_columns = med_collections_df[[self.wb_columns.ozon_id, self.wb_columns.seller_article, self.wb_columns.collection]]
         return med_without_unnecessary_columns
 
 class ConvPurchaseMEDStrategy(ConverterStrategy):

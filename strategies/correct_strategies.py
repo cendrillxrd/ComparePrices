@@ -196,5 +196,6 @@ class CorrectOZONinfo(CorrectorStrategy):
 
         for col in columns_to_update:
             if col in df.columns:
+                df[col] = df[col].astype(str).str.replace(',', '.', regex=False)
                 df[col] = pd.to_numeric(df[col], downcast="integer")
         return df

@@ -30,8 +30,8 @@ class InfoOZONCollector:
         collections_third = self.med.get_med_collections_third()
         collections_fourth = self.med.get_med_collections_fourth()
 
-        skus = cards_info[cards_info[self.main_columns_dto.status] == 'Продается'][self.main_columns_dto.ozon_article].to_list()
-        from_client_fbo = self.ozon.get_from_client_fbo(sku=skus)
+        # skus = cards_info[cards_info[self.main_columns_dto.status] == 'Продается'][self.main_columns_dto.ozon_article].to_list()
+        # from_client_fbo = self.ozon.get_from_client_fbo(sku=skus)
 
         purchase = self.med.get_med_purchase()
 
@@ -43,7 +43,7 @@ class InfoOZONCollector:
             collections_fourth=collections_fourth,
             prices=prices,
             to_client=to_client,
-            from_client=from_client_fbo,
+            # from_client=from_client_fbo,
             purchase=purchase,
             seller_prices=seller_prices,
             med_prices=med_prices,

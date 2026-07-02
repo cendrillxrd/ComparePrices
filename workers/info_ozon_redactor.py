@@ -20,7 +20,7 @@ class InfoOZONRedactor:
 
         operations = [
             (self.red.merge_with_to_client, info.to_client),
-            (self.red.merge_with_from_client, info.from_client),
+            # (self.red.merge_with_from_client, info.from_client),
             (self.red.merge_with_med_collections_ozon, ozon_collections_merged_3),
             (self.red.merge_with_med_prices_ozon, info.med_prices),
             (self.red.merge_with_seller_prices, info.seller_prices),
