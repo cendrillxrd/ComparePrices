@@ -18,6 +18,7 @@ class InfoOZONCollector:
 
     def collect_info(self) -> InfoOZONDTO:
         cards_info = self.ozon.get_cards_info()
+        cards_info.to_excel('cards_info.xlsx', index=False)
         prices = self.ozon.get_prices_info(cards_info)
 
         seller_prices = self.ozon.get_seller_prices()

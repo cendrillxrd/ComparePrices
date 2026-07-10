@@ -39,7 +39,7 @@ BASE_URLS = {
     'ozon': 'https://api-seller.ozon.ru',
 }
 
-MAIN_OZON_BRANDS = ['LTB', 'Armani Exchange', 'Bikkembergs']
+MAIN_OZON_BRANDS = ['LTB', 'Armani Exchange', 'Bikkembergs', 'STRELLSON']
 
 BASE_COLUMNS_NAME_WB = {'nmID': wb_columns.wb_article,
                      'vendorCode': wb_columns.seller_article,

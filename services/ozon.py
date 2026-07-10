@@ -125,6 +125,7 @@ class OzonService:
             #     {self.ozon_columns.ozon_article: 'first', self.ozon_columns.name: 'first'}).reset_index()
             # transformed_df = transform_dataframe(grouped_df, kwargs['col_name'])
             transformed_df = transform_dataframe(df_without_unnecessary_columns, col_name)
+            transformed_df.to_excel('tr_df.xlsx', index=False)
             articles = transformed_df[col_name].to_list()
             logger.info(f"Загружено {len(articles)} товаров для обработки")
 

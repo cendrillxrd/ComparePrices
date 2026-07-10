@@ -203,7 +203,7 @@ class ConvCardsInfoOZONStrategy(ConverterStrategy):
         df.rename(columns_rename,
                                   inplace=True,
                                   axis=1)
-        df[self.ozon_columns.ozon_id] = df[self.ozon_columns.ozon_id].str.lstrip("'")
+        # df[self.ozon_columns.ozon_id] = df[self.ozon_columns.ozon_id].str.lstrip("'")
         return df
 
 class ConvOrdersInfoOZONStrategy(ConverterStrategy):
